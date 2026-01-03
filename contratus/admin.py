@@ -1,9 +1,37 @@
-
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import User, Cliente, Construtora, Equipe, Empreendimento, UnidadeEmpreendimento, Proposta, Contrato
 
-# Registra os modelos
-admin.site.register(User)
+# Formulário de criação do usuário
+class CustomUserCreationForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'NIVEL')
+
+# Formulário de alteração do usuário
+class CustomUserChangeForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'NIVEL')
+
+# UserAdmin customizado
+class UserAdmin(BaseUserAdmin):
+    add_form = CustomUserCreationForm
+    form = CustomUserChangeForm
+    model = User
+    list_display = ['username', 'email', 'first_name', 'last_name', 'NIVEL', 'is_staff']
+    fieldsets = BaseUserAdmin.fieldsets + (
+        (None, {'fields': ('NIVEL',)}),
+    )
+    add_fieldsets = BaseUserAdmin.add_fieldsets + (
+        (None, {'fields': ('NIVEL',)}),
+    )
+
+# Registra o User customizado com o admin correto
+admin.site.register(User, UserAdmin)
+
+# Registra os outros modelos normalmente
 admin.site.register(Cliente)
 admin.site.register(Construtora)
 admin.site.register(Equipe)
