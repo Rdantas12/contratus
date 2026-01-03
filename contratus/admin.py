@@ -7,25 +7,25 @@ from .models import User, Cliente, Construtora, Equipe, Empreendimento, UnidadeE
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'NIVEL')
+        fields = ('username', 'email', 'first_name', 'last_name', 'nivel')
 
 # Formulário de alteração do usuário
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'NIVEL')
+        fields = ('username', 'email', 'first_name', 'last_name', 'nivel')
 
 # UserAdmin customizado
 class UserAdmin(BaseUserAdmin):
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
     model = User
-    list_display = ['username', 'email', 'first_name', 'last_name', 'NIVEL', 'is_staff']
+    list_display = ['username', 'email', 'first_name', 'last_name', 'nivel', 'is_staff']
     fieldsets = BaseUserAdmin.fieldsets + (
-        (None, {'fields': ('NIVEL',)}),
+        (None, {'fields': ('nivel',)}),
     )
     add_fieldsets = BaseUserAdmin.add_fieldsets + (
-        (None, {'fields': ('NIVEL',)}),
+        (None, {'fields': ('nivel',)}),
     )
 
 # Registra o User customizado com o admin correto
