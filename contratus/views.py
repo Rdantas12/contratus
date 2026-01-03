@@ -752,6 +752,7 @@ def contrato_create_from_proposta(request, proposta_pk):
     4. Salva o contrato e atualiza o status da unidade
     """
     
+    
     proposta = get_object_or_404(Proposta, pk=proposta_pk)
     
     # ========================================
