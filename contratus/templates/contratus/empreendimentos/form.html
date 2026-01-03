@@ -1,0 +1,204 @@
+{% extends 'contratus/base.html' %}
+
+{% block title %}{{ title }} - Sistema de Contratos{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-buildings"></i> {{ title }}
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <h5 class="mb-3"><i class="bi bi-buildings"></i> Dados Básicos</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Nome do Empreendimento *</label>
+                            {{ form.nome }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Tipo de Imóvel *</label>
+                            {{ form.tipo_imovel }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Construtora *</label>
+                            {{ form.construtora }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status *</label>
+                            {{ form.status }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-geo-alt"></i> Localização</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Rua *</label>
+                            {{ form.rua }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Número *</label>
+                            {{ form.numero }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Complemento</label>
+                            {{ form.complemento }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bairro *</label>
+                            {{ form.bairro }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label">Cidade *</label>
+                            {{ form.cidade }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Estado (UF) *</label>
+                            {{ form.estado }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">CEP *</label>
+                            {{ form.cep }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-house-door"></i> Características</h5>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Descrição Completa *</label>
+                            {{ form.descricao_completa }}
+                            <small class="text-muted">Ex: Casa linear com 01 quarto, sala, cozinha, banheiro e área de serviço</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Quartos</label>
+                            {{ form.quartos }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Banheiros</label>
+                            {{ form.banheiros }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Vagas Garagem</label>
+                            {{ form.vagas_garagem }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Área Útil (m²)</label>
+                            {{ form.area_util }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-building-check"></i> Unidades</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Total de Unidades *</label>
+                            {{ form.total_unidades }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Unidades Disponíveis *</label>
+                            {{ form.unidades_disponiveis }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-currency-dollar"></i> Valores</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Valor do Imóvel *</label>
+                            {{ form.valor_imovel }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Engenharia Necessária *</label>
+                            {{ form.valor_engenharia_necessaria }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Taxa de Corretagem (%) *</label>
+                            {{ form.taxa_corretagem_percentual }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-calendar"></i> Datas</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Data de Lançamento</label>
+                            {{ form.data_lancamento }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Data de Entrega Prevista</label>
+                            {{ form.data_entrega_prevista }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-image"></i> Imagem</h5>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Imagem Principal</label>
+                            {{ form.imagem_principal }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-file-text"></i> Informações Adicionais</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-check">
+                                {{ form.ativo }}
+                                <label class="form-check-label" for="{{ form.ativo.id_for_label }}">
+                                    Empreendimento Ativo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Observações</label>
+                            {{ form.observacoes }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'empreendimento_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-save"></i> Salvar Empreendimento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

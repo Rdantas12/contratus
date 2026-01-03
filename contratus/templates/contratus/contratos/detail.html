@@ -1,0 +1,243 @@
+{% extends 'contratus/base.html' %}
+
+{% block title %}Contrato {{ contrato.numero_contrato }} - Sistema de Contratos{% endblock %}
+{% block page_title %}Contrato {{ contrato.numero_contrato }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Card Principal -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-file-earmark-check"></i> Detalhes do Contrato</span>
+                <a href="{% url 'contrato_gerar_pdf' contrato.pk %}" class="btn btn-sm btn-danger" target="_blank">
+                    <i class="bi bi-file-pdf"></i> Gerar PDF Completo
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- Status e Ações -->
+                <div class="mb-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5>Status Atual:</h5>
+                        {% if contrato.status == 'ativo' %}
+                        <span class="badge bg-success" style="font-size: 1.2rem;">{{ contrato.get_status_display }}</span>
+                        {% elif contrato.status == 'em_andamento' %}
+                        <span class="badge bg-info" style="font-size: 1.2rem;">{{ contrato.get_status_display }}</span>
+                        {% elif contrato.status == 'assinado' %}
+                        <span class="badge bg-primary" style="font-size: 1.2rem;">{{ contrato.get_status_display }}</span>
+                        {% elif contrato.status == 'aguardando_assinatura' %}
+                        <span class="badge bg-warning text-dark" style="font-size: 1.2rem;">{{ contrato.get_status_display }}</span>
+                        {% elif contrato.status == 'finalizado' %}
+                        <span class="badge bg-dark" style="font-size: 1.2rem;">{{ contrato.get_status_display }}</span>
+                        {% elif contrato.status == 'cancelado' or contrato.status == 'distratado' %}
+                        <span class="badge bg-danger" style="font-size: 1.2rem;">{{ contrato.get_status_display }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary" style="font-size: 1.2rem;">{{ contrato.get_status_display }}</span>
+                        {% endif %}
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#alterarStatusModal">
+                        <i class="bi bi-arrow-repeat"></i> Alterar Status
+                    </button>
+                </div>
+                
+                <!-- Informações Gerais -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-info-circle"></i> Informações do Contrato</h5>
+                    <p>
+                        <strong>Número:</strong> {{ contrato.numero_contrato }}<br>
+                        <strong>Data de Criação:</strong> {{ contrato.data_criacao|date:"d/m/Y H:i" }}<br>
+                        {% if contrato.data_assinatura %}
+                        <strong>Data de Assinatura:</strong> {{ contrato.data_assinatura|date:"d/m/Y" }}<br>
+                        {% endif %}
+                        {% if contrato.data_vencimento %}
+                        <strong>Data de Vencimento:</strong> {{ contrato.data_vencimento|date:"d/m/Y" }}<br>
+                        {% endif %}
+                        <strong>Validade:</strong> {{ contrato.validade_dias }} dias (prorrogável por {{ contrato.prorrogacao_dias }} dias)
+                    </p>
+                </div>
+                
+                <!-- Empreendimento -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-buildings"></i> Empreendimento</h5>
+                    <p>
+                        <strong>Nome:</strong> {{ contrato.empreendimento.nome }}<br>
+                        <strong>Endereço:</strong> {{ contrato.empreendimento.get_endereco_completo }}<br>
+                        <strong>Descrição:</strong> {{ contrato.empreendimento.descricao_completa }}<br>
+                        <strong>Unidade:</strong> {{ contrato.unidade.identificacao }}
+                    </p>
+                </div>
+                
+                <!-- Vendedor (Construtora) -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-building"></i> Vendedor (Construtora)</h5>
+                    <p>
+                        <strong>Razão Social:</strong> {{ contrato.empreendimento.construtora.razao_social }}<br>
+                        <strong>CNPJ:</strong> {{ contrato.empreendimento.construtora.cnpj }}<br>
+                        <strong>Endereço:</strong> {{ contrato.empreendimento.construtora.get_endereco_completo }}
+                    </p>
+                </div>
+                
+                <!-- Comprador -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-person"></i> Comprador</h5>
+                    <p>
+                        <strong>Nome:</strong> {{ contrato.cliente.nome_completo }}<br>
+                        <strong>CPF:</strong> {{ contrato.cliente.cpf }}<br>
+                        <strong>Telefone:</strong> {{ contrato.cliente.telefone }}<br>
+                        <strong>Endereço:</strong> {{ contrato.cliente.get_endereco_completo }}
+                    </p>
+                </div>
+                
+                <!-- Corretor -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-person-badge"></i> Corretor Responsável</h5>
+                    <p>
+                        <strong>Nome:</strong> {{ contrato.corretor.get_full_name }}<br>
+                        <strong>CRECI:</strong> {{ contrato.corretor.creci }}<br>
+                        <strong>Telefone:</strong> {{ contrato.corretor.telefone }}
+                    </p>
+                </div>
+                
+                <!-- Valores do Contrato -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-currency-dollar"></i> Valores do Contrato</h5>
+                    <table class="table table-bordered">
+                        <tr class="table-primary">
+                            <th>Valor Total do Imóvel:</th>
+                            <td><strong>R$ {{ contrato.valor_imovel|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Financiamento (Caixa Econômica Federal):</th>
+                            <td>R$ {{ contrato.valor_financiamento|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Subsídio (Governo Federal):</th>
+                            <td>R$ {{ contrato.valor_subsidio|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>FGTS:</th>
+                            <td>R$ {{ contrato.valor_fgts|floatformat:2 }}</td>
+                        </tr>
+                        {% if contrato.valor_entrada > 0 %}
+                        <tr>
+                            <th>Entrada:</th>
+                            <td>R$ {{ contrato.valor_entrada|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="table-info">
+                            <th>Parcelamento com Construtora:</th>
+                            <td>
+                                <strong>R$ {{ contrato.valor_parcelamento|floatformat:2 }}</strong><br>
+                                <small>{{ contrato.numero_parcelas }}x de R$ {{ contrato.valor_parcela|floatformat:2 }}</small>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Testemunhas -->
+                {% if contrato.testemunha1_nome or contrato.testemunha2_nome %}
+                <div class="mb-4">
+                    <h5><i class="bi bi-people"></i> Testemunhas</h5>
+                    {% if contrato.testemunha1_nome %}
+                    <p>
+                        <strong>Testemunha 1:</strong> {{ contrato.testemunha1_nome }}<br>
+                        <strong>CPF:</strong> {{ contrato.testemunha1_cpf }}
+                    </p>
+                    {% endif %}
+                    {% if contrato.testemunha2_nome %}
+                    <p>
+                        <strong>Testemunha 2:</strong> {{ contrato.testemunha2_nome }}<br>
+                        <strong>CPF:</strong> {{ contrato.testemunha2_cpf }}
+                    </p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Observações -->
+                {% if contrato.observacoes %}
+                <div class="mb-4">
+                    <h5><i class="bi bi-file-text"></i> Observações</h5>
+                    <p>{{ contrato.observacoes|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                <!-- Voltar -->
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'contrato_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Histórico -->
+        {% if historico %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <i class="bi bi-clock-history"></i> Histórico de Alterações
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Usuário</th>
+                                <th>De</th>
+                                <th>Para</th>
+                                <th>Observação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in historico %}
+                            <tr>
+                                <td>{{ item.data_alteracao|date:"d/m/Y H:i" }}</td>
+                                <td>{{ item.usuario.get_full_name }}</td>
+                                <td><span class="badge bg-secondary">{{ item.get_status_anterior_display }}</span></td>
+                                <td><span class="badge bg-primary">{{ item.get_status_novo_display }}</span></td>
+                                <td>{{ item.observacao|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Alterar Status -->
+<div class="modal fade" id="alterarStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'contrato_alterar_status' contrato.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Alterar Status do Contrato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Novo Status</label>
+                        <select name="status" class="form-control" required>
+                            <option value="">Selecione...</option>
+                            {% for value, label in contrato.STATUS_CHOICES %}
+                            <option value="{{ value }}" {% if value == contrato.status %}disabled{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Observação (opcional)</label>
+                        <textarea name="observacao" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alteração</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

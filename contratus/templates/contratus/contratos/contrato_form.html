@@ -1,0 +1,219 @@
+{% extends 'contratus/base.html' %}
+
+{% block title %}{{ title }} - Sistema de Contratos{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        
+        <!-- ✅ CARD DE INFORMAÇÕES DA PROPOSTA (SOMENTE LEITURA) -->
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-info-circle"></i> Dados Importados da Proposta {{ proposta.numero_proposta }}
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-check-circle"></i> 
+                    <strong>Estes dados serão copiados automaticamente para o contrato.</strong> 
+                    Você só precisa preencher a data de assinatura e, opcionalmente, as testemunhas.
+                </div>
+                
+                <div class="row">
+                    <!-- COLUNA 1: DADOS DO IMÓVEL -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted"><strong>📍 Dados do Imóvel</strong></h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Empreendimento:</strong></td>
+                                <td>{{ dados_proposta.empreendimento }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Unidade:</strong></td>
+                                <td>{{ dados_proposta.unidade }}</td>
+                            </tr>
+                        </table>
+                        
+                        <h6 class="text-muted mt-3"><strong>👤 Dados do Cliente</strong></h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Nome:</strong></td>
+                                <td>{{ dados_proposta.cliente }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CPF:</strong></td>
+                                <td>{{ dados_proposta.cliente_cpf }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Endereço:</strong></td>
+                                <td>{{ dados_proposta.cliente_endereco }}</td>
+                            </tr>
+                        </table>
+                        
+                        <h6 class="text-muted mt-3"><strong>🏢 Corretor</strong></h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Nome:</strong></td>
+                                <td>{{ dados_proposta.corretor }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CRECI:</strong></td>
+                                <td>{{ dados_proposta.corretor_creci }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- COLUNA 2: VALORES FINANCEIROS -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted"><strong>💰 Valores Financeiros</strong></h6>
+                        <table class="table table-sm table-striped">
+                            <tr>
+                                <td><strong>Valor do Imóvel:</strong></td>
+                                <td class="text-end">R$ {{ dados_proposta.valor_imovel|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Financiamento (CEF):</td>
+                                <td class="text-end">R$ {{ dados_proposta.valor_financiamento|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Subsídio:</td>
+                                <td class="text-end">R$ {{ dados_proposta.valor_subsidio|floatformat:2 }}</td>
+                            </tr>
+                            {% if dados_proposta.valor_fgts > 0 %}
+                            <tr>
+                                <td>FGTS:</td>
+                                <td class="text-end">R$ {{ dados_proposta.valor_fgts|floatformat:2 }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if dados_proposta.valor_entrada > 0 %}
+                            <tr>
+                                <td>Entrada:</td>
+                                <td class="text-end">R$ {{ dados_proposta.valor_entrada|floatformat:2 }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr class="table-primary">
+                                <td><strong>Parcelamento (Construtora):</strong></td>
+                                <td class="text-end"><strong>R$ {{ dados_proposta.valor_parcelamento|floatformat:2 }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Número de Parcelas:</td>
+                                <td class="text-end">{{ dados_proposta.numero_parcelas }}x</td>
+                            </tr>
+                            <tr>
+                                <td>Valor de cada Parcela:</td>
+                                <td class="text-end">R$ {{ dados_proposta.valor_parcela|floatformat:2 }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ✅ FORMULÁRIO DE CRIAÇÃO DO CONTRATO -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-file-earmark-plus"></i> Dados Complementares do Contrato
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Preencha apenas os campos abaixo.</strong> 
+                        Todos os outros dados já foram importados automaticamente da proposta.
+                    </div>
+                    
+                    <!-- DATA DE ASSINATURA -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><strong>{{ form.data_assinatura.label }}</strong></label>
+                            {{ form.data_assinatura }}
+                            {% if form.data_assinatura.errors %}
+                                <div class="text-danger mt-1">{{ form.data_assinatura.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                ✅ Obrigatório - Data em que o contrato será assinado
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- TESTEMUNHAS (OPCIONAL) -->
+                    <h5 class="mb-3">
+                        <i class="bi bi-person-check"></i> Testemunhas (Opcional)
+                    </h5>
+                    
+                    <div class="alert alert-secondary">
+                        <i class="bi bi-info-circle"></i> 
+                        As testemunhas são <strong>opcionais</strong>. Você pode deixar em branco se não houver testemunhas no momento da assinatura.
+                    </div>
+                    
+                    <!-- TESTEMUNHA 1 -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.testemunha1_nome.label }}</label>
+                            {{ form.testemunha1_nome }}
+                            {% if form.testemunha1_nome.errors %}
+                                <div class="text-danger mt-1">{{ form.testemunha1_nome.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.testemunha1_cpf.label }}</label>
+                            {{ form.testemunha1_cpf }}
+                            {% if form.testemunha1_cpf.errors %}
+                                <div class="text-danger mt-1">{{ form.testemunha1_cpf.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- TESTEMUNHA 2 -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.testemunha2_nome.label }}</label>
+                            {{ form.testemunha2_nome }}
+                            {% if form.testemunha2_nome.errors %}
+                                <div class="text-danger mt-1">{{ form.testemunha2_nome.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.testemunha2_cpf.label }}</label>
+                            {{ form.testemunha2_cpf }}
+                            {% if form.testemunha2_cpf.errors %}
+                                <div class="text-danger mt-1">{{ form.testemunha2_cpf.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- OBSERVAÇÕES -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.observacoes.label }}</label>
+                        {{ form.observacoes }}
+                        {% if form.observacoes.errors %}
+                            <div class="text-danger mt-1">{{ form.observacoes.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            Observações adicionais sobre o contrato (opcional)
+                        </small>
+                    </div>
+                    
+                    <!-- BOTÕES -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle"></i> Criar Contrato
+                        </button>
+                        <a href="{% url 'proposta_detail' proposta.pk %}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

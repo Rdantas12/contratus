@@ -1,0 +1,998 @@
+{% extends 'contratus/base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard - Sistema de Contratos{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ========================================
+       CARDS E ESTATÍSTICAS
+    ======================================== */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .stat-card .icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+    
+    .stat-card .value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: #1e293b;
+    }
+    
+    .stat-card .label {
+        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .stat-card .trend {
+        margin-top: 12px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .trend-up {
+        color: #10b981;
+    }
+    
+    .trend-down {
+        color: #ef4444;
+    }
+    
+    /* Cores dos cards */
+    .card-primary .icon { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; }
+    .card-success .icon { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+    .card-warning .icon { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+    .card-danger .icon { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+    .card-info .icon { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; }
+    .card-purple .icon { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; }
+    
+    /* ========================================
+       FILTROS
+    ======================================== */
+    .filters-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .filters-section h5 {
+        margin-bottom: 20px;
+        color: #1e293b;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .filter-group {
+        margin-bottom: 16px;
+    }
+    
+    .filter-group label {
+        font-weight: 500;
+        color: #475569;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+    
+    .filter-group select {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+    }
+    
+    .filter-group select:focus {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* ========================================
+       GRÁFICOS
+    ======================================== */
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 24px;
+        height: 100%;
+    }
+    
+    .chart-container h5 {
+        margin-bottom: 20px;
+        color: #1e293b;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .chart-wrapper {
+        position: relative;
+        height: 300px;
+    }
+    
+    /* ========================================
+       TABELAS
+    ======================================== */
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 24px;
+    }
+    
+    .table-container h5 {
+        margin-bottom: 20px;
+        color: #1e293b;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .custom-table thead th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
+        border-bottom: 2px solid #e2e8f0;
+        white-space: nowrap;
+    }
+    
+    .custom-table tbody tr {
+        transition: background-color 0.2s;
+    }
+    
+    .custom-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+    
+    .custom-table tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.9rem;
+        color: #1e293b;
+    }
+    
+    /* Badges de status */
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .badge-ativo { background-color: #d1fae5; color: #065f46; }
+    .badge-finalizado { background-color: #dbeafe; color: #1e3a8a; }
+    .badge-cancelado { background-color: #fee2e2; color: #991b1b; }
+    .badge-pendente { background-color: #fef3c7; color: #92400e; }
+    .badge-aprovada { background-color: #d1fae5; color: #065f46; }
+    .badge-recusada { background-color: #fee2e2; color: #991b1b; }
+    
+    /* ========================================
+       RANKING
+    ======================================== */
+    .ranking-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        background: #f8fafc;
+        transition: background-color 0.2s;
+    }
+    
+    .ranking-item:hover {
+        background: #e2e8f0;
+    }
+    
+    .ranking-position {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-right: 12px;
+    }
+    
+    .ranking-position.first {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    }
+    
+    .ranking-position.second {
+        background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+    }
+    
+    .ranking-position.third {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    }
+    
+    .ranking-info {
+        flex: 1;
+    }
+    
+    .ranking-name {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.95rem;
+    }
+    
+    .ranking-stats {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+    
+    /* ========================================
+       RESPONSIVIDADE
+    ======================================== */
+    @media (max-width: 768px) {
+        .stat-card .value {
+            font-size: 1.5rem;
+        }
+        
+        .chart-wrapper {
+            height: 250px;
+        }
+        
+        .filters-section {
+            padding: 16px;
+        }
+    }
+    
+    /* ========================================
+       ANIMAÇÕES
+    ======================================== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fade-in {
+        animation: fadeInUp 0.5s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    
+    <!-- CABEÇALHO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </h2>
+            <p class="text-muted mb-0">
+                {% if user.nivel == 'administrador' %}
+                    Visão geral completa do sistema
+                {% elif user.nivel == 'gerente' %}
+                    Visão geral da equipe {{ user.equipe.nome }}
+                {% else %}
+                    Sua visão geral de vendas
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <span class="badge bg-primary fs-6">
+                {{ periodo_label }}
+            </span>
+        </div>
+    </div>
+    
+    <!-- ========================================
+         FILTROS DINÂMICOS
+    ======================================== -->
+    <div class="filters-section animate-fade-in">
+        <h5>
+            <i class="bi bi-funnel"></i> Filtros Avançados
+        </h5>
+        <form method="GET" id="filterForm">
+            <div class="row">
+                <!-- Período -->
+                <div class="col-md-2 col-sm-6">
+                    <div class="filter-group">
+                        <label>Período</label>
+                        <select name="periodo" class="form-select" onchange="this.form.submit()">
+                            <option value="7" {% if periodo == '7' %}selected{% endif %}>Últimos 7 dias</option>
+                            <option value="30" {% if periodo == '30' %}selected{% endif %}>Últimos 30 dias</option>
+                            <option value="90" {% if periodo == '90' %}selected{% endif %}>Últimos 90 dias</option>
+                            <option value="ano" {% if periodo == 'ano' %}selected{% endif %}>Este ano</option>
+                            <option value="todos" {% if periodo == 'todos' %}selected{% endif %}>Todos</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Status -->
+                <div class="col-md-2 col-sm-6">
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select name="status" class="form-select" onchange="this.form.submit()">
+                            <option value="todos" {% if status_filtro == 'todos' %}selected{% endif %}>Todos</option>
+                            {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if status_filtro == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Equipe (apenas admin) -->
+                {% if pode_ver_todas_equipes %}
+                <div class="col-md-2 col-sm-6">
+                    <div class="filter-group">
+                        <label>Equipe</label>
+                        <select name="equipe" class="form-select" onchange="this.form.submit()">
+                            <option value="todas" {% if equipe_filtro == 'todas' %}selected{% endif %}>Todas</option>
+                            {% for equipe in equipes_disponiveis %}
+                            <option value="{{ equipe.id }}" {% if equipe_filtro == equipe.id|stringformat:"s" %}selected{% endif %}>
+                                {{ equipe.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Corretor (admin e gerente) -->
+                {% if user.nivel != 'corretor' %}
+                <div class="col-md-2 col-sm-6">
+                    <div class="filter-group">
+                        <label>Corretor</label>
+                        <select name="corretor" class="form-select" onchange="this.form.submit()">
+                            <option value="todos" {% if corretor_filtro == 'todos' %}selected{% endif %}>Todos</option>
+                            {% for corretor in corretores_disponiveis %}
+                            <option value="{{ corretor.id }}" {% if corretor_filtro == corretor.id|stringformat:"s" %}selected{% endif %}>
+                                {{ corretor.get_full_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Empreendimento -->
+                <div class="col-md-2 col-sm-6">
+                    <div class="filter-group">
+                        <label>Empreendimento</label>
+                        <select name="empreendimento" class="form-select" onchange="this.form.submit()">
+                            <option value="todos" {% if empreendimento_filtro == 'todos' %}selected{% endif %}>Todos</option>
+                            {% for emp in empreendimentos_disponiveis %}
+                            <option value="{{ emp.id }}" {% if empreendimento_filtro == emp.id|stringformat:"s" %}selected{% endif %}>
+                                {{ emp.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Botão Limpar -->
+                <div class="col-md-2 col-sm-6 d-flex align-items-end">
+                    <div class="filter-group w-100">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-x-circle"></i> Limpar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- ========================================
+         CARDS DE ESTATÍSTICAS
+    ======================================== -->
+    <div class="row mb-4">
+        <!-- Total de Contratos -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card card-primary animate-fade-in">
+                <div class="icon">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div class="value">{{ total_contratos }}</div>
+                <div class="label">Total de Contratos</div>
+                <div class="trend {% if variacao_contratos >= 0 %}trend-up{% else %}trend-down{% endif %}">
+                    <i class="bi bi-{% if variacao_contratos >= 0 %}arrow-up{% else %}arrow-down{% endif %}"></i>
+                    {{ variacao_contratos|floatformat:1 }}% vs período anterior
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contratos Ativos -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card card-success animate-fade-in">
+                <div class="icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="value">{{ contratos_ativos }}</div>
+                <div class="label">Contratos Ativos</div>
+                <div class="trend text-muted">
+                    <i class="bi bi-clock"></i>
+                    {{ propostas_pendentes }} propostas pendentes
+                </div>
+            </div>
+        </div>
+        
+        <!-- Valor Total -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card card-info animate-fade-in">
+                <div class="icon">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+                <div class="value">R$ {{ valor_total_contratos|floatformat:0|intcomma }}</div>
+                <div class="label">Valor Total em Contratos</div>
+                <div class="trend text-muted">
+                    <i class="bi bi-wallet2"></i>
+                    R$ {{ comissao_estimada|floatformat:0|intcomma }} em comissões
+                </div>
+            </div>
+        </div>
+        
+        <!-- Taxa de Conversão -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card card-purple animate-fade-in">
+                <div class="icon">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <div class="value">{{ taxa_conversao }}%</div>
+                <div class="label">Taxa de Conversão</div>
+                <div class="trend text-muted">
+                    <i class="bi bi-file-earmark-check"></i>
+                    {{ propostas_aprovadas }}/{{ total_propostas }} propostas
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========================================
+         CARDS SECUNDÁRIOS
+    ======================================== -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card card-warning animate-fade-in">
+                <div class="icon">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div class="value">{{ propostas_pendentes }}</div>
+                <div class="label">Propostas Pendentes</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card card-success animate-fade-in">
+                <div class="icon">
+                    <i class="bi bi-check2-all"></i>
+                </div>
+                <div class="value">{{ contratos_finalizados }}</div>
+                <div class="label">Contratos Finalizados</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card card-danger animate-fade-in">
+                <div class="icon">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div class="value">{{ contratos_cancelados }}</div>
+                <div class="label">Contratos Cancelados</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card card-info animate-fade-in">
+                <div class="icon">
+                    <i class="bi bi-file-earmark"></i>
+                </div>
+                <div class="value">{{ total_propostas }}</div>
+                <div class="label">Total de Propostas</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========================================
+         GRÁFICOS
+    ======================================== -->
+    <div class="row mb-4">
+        <!-- Evolução Mensal -->
+        <div class="col-lg-8 mb-4">
+            <div class="chart-container animate-fade-in">
+                <h5>
+                    <i class="bi bi-bar-chart-line"></i> Evolução Mensal de Contratos
+                </h5>
+                <div class="chart-wrapper">
+                    <canvas id="chartEvolucaoMensal"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status dos Contratos -->
+        <div class="col-lg-4 mb-4">
+            <div class="chart-container animate-fade-in">
+                <h5>
+                    <i class="bi bi-pie-chart"></i> Status dos Contratos
+                </h5>
+                <div class="chart-wrapper">
+                    <canvas id="chartStatusContratos"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <!-- Status das Propostas -->
+        <div class="col-lg-4 mb-4">
+            <div class="chart-container animate-fade-in">
+                <h5>
+                    <i class="bi bi-pie-chart-fill"></i> Status das Propostas
+                </h5>
+                <div class="chart-wrapper">
+                    <canvas id="chartStatusPropostas"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empreendimentos Mais Vendidos -->
+        <div class="col-lg-8 mb-4">
+            <div class="chart-container animate-fade-in">
+                <h5>
+                    <i class="bi bi-building"></i> Top 5 Empreendimentos
+                </h5>
+                <div class="chart-wrapper">
+                    <canvas id="chartEmpreendimentos"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========================================
+         RANKING E TABELAS
+    ======================================== -->
+    <div class="row mb-4">
+        <!-- Ranking de Corretores -->
+        {% if ranking_corretores %}
+        <div class="col-lg-4 mb-4">
+            <div class="table-container animate-fade-in">
+                <h5>
+                    <i class="bi bi-trophy"></i> Ranking de Corretores
+                </h5>
+                <div style="max-height: 500px; overflow-y: auto;">
+                    {% for corretor in ranking_corretores %}
+                    <div class="ranking-item">
+                        <div class="ranking-position {% if forloop.counter == 1 %}first{% elif forloop.counter == 2 %}second{% elif forloop.counter == 3 %}third{% endif %}">
+                            {{ forloop.counter }}
+                        </div>
+                        <div class="ranking-info">
+                            <div class="ranking-name">{{ corretor.get_full_name }}</div>
+                            <div class="ranking-stats">
+                                {{ corretor.total_contratos }} contratos • 
+                                R$ {{ corretor.valor_total|default:0|floatformat:0|intcomma }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Contratos Recentes -->
+        <div class="col-lg-{% if ranking_corretores %}8{% else %}12{% endif %} mb-4">
+            <div class="table-container animate-fade-in">
+                <h5>
+                    <i class="bi bi-clock-history"></i> Contratos Recentes
+                </h5>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Nº Contrato</th>
+                                <th>Cliente</th>
+                                <th>Empreendimento</th>
+                                <th>Corretor</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contrato in contratos_recentes %}
+                            <tr>
+                                <td><strong>{{ contrato.numero_contrato }}</strong></td>
+                                <td>{{ contrato.cliente.nome_completo|truncatewords:3 }}</td>
+                                <td>{{ contrato.empreendimento.nome|truncatewords:3 }}</td>
+                                <td>{{ contrato.corretor.get_full_name|truncatewords:2 }}</td>
+                                <td>R$ {{ contrato.valor_imovel|floatformat:0|intcomma }}</td>
+                                <td>
+                                    <span class="badge-status badge-{{ contrato.status }}">
+                                        {{ contrato.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ contrato.data_criacao|date:"d/m/Y" }}</td>
+                                <td>
+                                    <a href="{% url 'contrato_detail' contrato.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    Nenhum contrato encontrado
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Propostas Recentes -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="table-container animate-fade-in">
+                <h5>
+                    <i class="bi bi-file-earmark-text"></i> Propostas Recentes
+                </h5>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Nº Proposta</th>
+                                <th>Cliente</th>
+                                <th>Empreendimento</th>
+                                <th>Corretor</th>
+                                <th>Valor Total</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for proposta in propostas_recentes %}
+                            <tr>
+                                <td><strong>{{ proposta.numero_proposta }}</strong></td>
+                                <td>{{ proposta.cliente.nome_completo|truncatewords:3 }}</td>
+                                <td>{{ proposta.empreendimento.nome|truncatewords:3 }}</td>
+                                <td>{{ proposta.corretor.get_full_name|truncatewords:2 }}</td>
+                                <td>R$ {{ proposta.total_aprovacao|floatformat:0|intcomma }}</td>
+                                <td>
+                                    <span class="badge-status badge-{{ proposta.status }}">
+                                        {{ proposta.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ proposta.data_criacao|date:"d/m/Y" }}</td>
+                                <td>
+                                    <a href="{% url 'proposta_detail' proposta.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    Nenhuma proposta encontrada
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// ========================================
+// CONFIGURAÇÕES GLOBAIS DO CHART.JS
+// ========================================
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = '#64748b';
+
+// ========================================
+// GRÁFICO: EVOLUÇÃO MENSAL
+// ========================================
+const ctxEvolucao = document.getElementById('chartEvolucaoMensal').getContext('2d');
+new Chart(ctxEvolucao, {
+    type: 'bar',
+    data: {
+        labels: {{ grafico_meses_labels|safe }},
+        datasets: [
+            {
+                label: 'Contratos',
+                data: {{ grafico_meses_contratos|safe }},
+                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                borderColor: 'rgb(59, 130, 246)',
+                borderWidth: 2,
+                borderRadius: 6,
+                yAxisID: 'y'
+            },
+            {
+                label: 'Valor (R$ mil)',
+                data: {{ grafico_meses_valores|safe }}.map(v => v / 1000),
+                type: 'line',
+                borderColor: 'rgb(16, 185, 129)',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                yAxisID: 'y1'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    usePointStyle: true,
+                    padding: 15
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: '#3b82f6',
+                borderWidth: 1
+            }
+        },
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Quantidade de Contratos'
+                },
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Valor (R$ mil)'
+                },
+                grid: {
+                    drawOnChartArea: false
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// ========================================
+// GRÁFICO: STATUS DOS CONTRATOS
+// ========================================
+const ctxStatus = document.getElementById('chartStatusContratos').getContext('2d');
+new Chart(ctxStatus, {
+    type: 'doughnut',
+    data: {
+        labels: {{ grafico_status_labels|safe }},
+        datasets: [{
+            data: {{ grafico_status_valores|safe }},
+            backgroundColor: [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(6, 182, 212, 0.8)'
+            ],
+            borderColor: '#fff',
+            borderWidth: 3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    usePointStyle: true,
+                    padding: 15
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12
+            }
+        }
+    }
+});
+
+// ========================================
+// GRÁFICO: STATUS DAS PROPOSTAS
+// ========================================
+const ctxPropostas = document.getElementById('chartStatusPropostas').getContext('2d');
+new Chart(ctxPropostas, {
+    type: 'pie',
+    data: {
+        labels: {{ grafico_propostas_labels|safe }},
+        datasets: [{
+            data: {{ grafico_propostas_valores|safe }},
+            backgroundColor: [
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(139, 92, 246, 0.8)'
+            ],
+            borderColor: '#fff',
+            borderWidth: 3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    usePointStyle: true,
+                    padding: 15
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12
+            }
+        }
+    }
+});
+
+// ========================================
+// GRÁFICO: TOP EMPREENDIMENTOS
+// ========================================
+const ctxEmpreendimentos = document.getElementById('chartEmpreendimentos').getContext('2d');
+new Chart(ctxEmpreendimentos, {
+    type: 'bar',
+    data: {
+        labels: [
+            {% for emp in empreendimentos_top %}
+                '{{ emp.empreendimento__nome|truncatewords:3 }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Contratos Vendidos',
+            data: [
+                {% for emp in empreendimentos_top %}
+                    {{ emp.total }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(139, 92, 246, 0.8)',
+            borderColor: 'rgb(139, 92, 246)',
+            borderWidth: 2,
+            borderRadius: 6
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                callbacks: {
+                    afterLabel: function(context) {
+                        const valores = [
+                            {% for emp in empreendimentos_top %}
+                                {{ emp.valor_total|default:0 }}{% if not forloop.last %},{% endif %}
+                            {% endfor %}
+                        ];
+                        return 'Valor: R$ ' + valores[context.dataIndex].toLocaleString('pt-BR');
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            },
+            y: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// ========================================
+// AUTO-SUBMIT DO FORMULÁRIO DE FILTROS
+// ========================================
+document.querySelectorAll('#filterForm select').forEach(select => {
+    select.addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
+    });
+});
+</script>
+{% endblock %}

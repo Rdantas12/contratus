@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Proposta de Compra e Venda</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #000;
+        }
+        
+        .header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14pt;
+            margin-bottom: 30px;
+            text-decoration: underline;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            font-size: 12pt;
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+        
+        .field {
+            margin-bottom: 8px;
+            padding-left: 20px;
+        }
+        
+        .field strong {
+            font-weight: bold;
+        }
+        
+        .observacao {
+            background-color: #f0f0f0;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #333;
+        }
+        
+        .observacao-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        PROPOSTA DE COMPRA E VENDA
+    </div>
+    
+    <!-- EMPREENDIMENTO -->
+    <div class="section">
+        <div class="section-title">EMPREENDIMENTO:</div>
+        <div class="field">
+            <strong>• NOME:</strong> {{ proposta.empreendimento.nome }}
+        </div>
+        <div class="field">
+            <strong>• ENDEREÇO (RUA/NÚMERO/BAIRRO):</strong> {{ proposta.empreendimento.get_endereco_completo }}
+        </div>
+        <div class="field">
+            <strong>• DESCRIÇÃO:</strong> {{ proposta.empreendimento.descricao_completa }}
+        </div>
+        <div class="field">
+            <strong>• UNIDADE ESCOLHIDA:</strong> {{ proposta.unidade.identificacao }}
+        </div>
+        <div class="field">
+            <strong>• CORRETOR:</strong> {{ proposta.corretor.get_full_name }}
+        </div>
+        <div class="field">
+            <strong>• CRECI:</strong> {{ proposta.corretor.creci }}
+        </div>
+    </div>
+    
+    <!-- COMPRADOR -->
+    <div class="section">
+        <div class="section-title">COMPRADOR:</div>
+        <div class="field">
+            <strong>• CLIENTE:</strong> {{ proposta.cliente.nome_completo }}
+        </div>
+        <div class="field">
+            <strong>• CPF:</strong> {{ proposta.cliente.cpf }}
+        </div>
+        <div class="field">
+            <strong>• ORIGEM DO CLIENTE:</strong> {{ proposta.cliente.get_origem_display }}
+        </div>
+        <div class="field">
+            <strong>• ENDEREÇO DO CLIENTE:</strong> {{ proposta.cliente.get_endereco_completo }}
+        </div>
+    </div>
+    
+    <!-- NEGOCIAÇÃO (VALORES) -->
+    <div class="section">
+        <div class="section-title">NEGOCIAÇÃO (VALORES):</div>
+        
+        <div class="field">
+            <strong>ENGENHARIA NECESSÁRIA:</strong> R$ {{ proposta.valor_engenharia_necessaria|floatformat:2 }}
+        </div>
+        
+        <div class="field">
+            <strong>• DO IMÓVEL:</strong> R$ {{ proposta.valor_imovel|floatformat:2 }}
+        </div>
+        <div class="field">
+            <strong>• DO FINANCIAMENTO:</strong> R$ {{ proposta.valor_financiamento|floatformat:2 }}
+        </div>
+        <div class="field">
+            <strong>• DO SUBSÍDIO:</strong> R$ {{ proposta.valor_subsidio|floatformat:2 }}
+        </div>
+        <div class="field">
+            <strong>• FGTS:</strong> R$ {{ proposta.valor_fgts|floatformat:2 }}
+        </div>
+        <div class="field">
+            <strong>• SINAL:</strong> R$ {{ proposta.valor_sinal|floatformat:2 }}
+        </div>
+        <div class="field">
+            <strong>• ENTRADA:</strong> R$ {{ proposta.valor_entrada|floatformat:2 }}
+        </div>
+        
+        <div class="field" style="margin-top: 15px;">
+            <strong>PARCELAMENTO CONSTRUTORA:</strong> sem juros R$ {{ proposta.valor_parcelamento_sem_juros|floatformat:2 }} 
+            (⏪ PARA COLOCAR NO CONTRATO). Com os 50% de juros R$ {{ proposta.valor_parcelamento_com_juros|floatformat:2 }}.
+        </div>
+        
+        <div class="field">
+            <strong>• NÚMERO DE PARCELAS:</strong> {{ proposta.numero_parcelas }}
+        </div>
+        <div class="field">
+            <strong>• VALOR DAS PARCELAS:</strong> R$ {{ proposta.valor_parcela|floatformat:2 }}
+        </div>
+        
+        <div class="field" style="margin-top: 15px; font-weight: bold;">
+            <strong>TOTAL DA APROVAÇÃO:</strong> R$ {{ proposta.total_aprovacao|floatformat:2 }}
+        </div>
+    </div>
+    
+    <!-- OBSERVAÇÃO -->
+    <div class="observacao">
+        <div class="observacao-title">OBSERVAÇÃO:</div>
+        <p>
+            ➡ No campo "parcelamento com a construtora" o valor menor 
+            <strong>R$ {{ proposta.valor_parcelamento_sem_juros|floatformat:2 }}</strong> é sem os juros do parcelamento 
+            <strong>(para colocar no contrato)</strong> e o valor maior 
+            <strong>R$ {{ proposta.valor_parcelamento_com_juros|floatformat:2 }}</strong> 
+            é o valor total enviado em proposta.
+        </p>
+        
+        {% if proposta.observacoes %}
+        <div style="margin-top: 15px;">
+            <strong>Observações Adicionais:</strong><br>
+            {{ proposta.observacoes }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>
+            <strong>{{ config.nome_imobiliaria }}</strong><br>
+            {{ config.endereco_imobiliaria }} - CEP: {{ config.cep_imobiliaria }}<br>
+            Tel: {{ config.telefone_imobiliaria }} | {{ config.instagram_imobiliaria }} | {{ config.site_imobiliaria }}<br>
+            CNPJ: {{ config.cnpj_imobiliaria }}
+        </p>
+        <p style="margin-top: 20px;">
+            <strong>Proposta Nº:</strong> {{ proposta.numero_proposta }}<br>
+            <strong>Data de Emissão:</strong> {{ data_hoje }}
+        </p>
+    </div>
+</body>
+</html>

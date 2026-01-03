@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrato de Compra e Venda - {{ contrato.numero_contrato }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2.5cm 2cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #000;
+            text-align: justify;
+        }
+        
+        .title-main {
+            text-align: center;
+            font-weight: bold;
+            font-size: 11pt;
+            margin-bottom: 20px;
+            margin-top: 0;
+        }
+        
+        .item-title {
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .content {
+            margin-left: 0;
+            margin-bottom: 15px;
+        }
+        
+        .content p {
+            margin: 5px 0;
+        }
+        
+        ul {
+            margin-left: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .signature-section {
+            margin-top: 60px;
+            page-break-inside: avoid;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 70%;
+            margin: 50px auto 5px auto;
+        }
+        
+        .signature-info {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 9pt;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 8pt;
+            color: #333;
+            page-break-inside: avoid;
+        }
+        
+        .page-break {
+            page-break-after: always;
+        }
+        
+        h2 {
+            text-align: center;
+            text-decoration: underline;
+            margin-top: 100px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- ================================================ -->
+    <!-- PÁGINA 1: CABEÇALHO E ITENS 01-05 -->
+    <!-- ================================================ -->
+    
+    <div class="title-main">
+        CONTRATO PARTICULAR DE ABERTURA DE PROCESSO DE COMPRA E VENDA DE IMÓVEL,<br>
+        QUE ENTRE SI FAZEM, VENDEDORES, COMPRADORES E INTERMEDIADORES,<br>
+        COMO DESIGNADOS E QUALIFICADOS NA FORMA ABAIXO:
+    </div>
+    
+    <!-- ITEM 01 - VENDEDOR -->
+    <div class="item-title">ITEM 01 – VENDEDOR(A):</div>
+    <div class="content">
+        <div class="subtitle">NOME:</div>
+        <p>{{ contrato.empreendimento.construtora.razao_social|upper }}</p>
+        
+        <div class="subtitle">CNPJ:</div>
+        <p>{{ contrato.empreendimento.construtora.cnpj }}</p>
+        
+        <div class="subtitle">ENDEREÇO:</div>
+        <p>{{ contrato.empreendimento.construtora.get_endereco_completo }}</p>
+    </div>
+    
+    <!-- ITEM 02 - COMPRADOR -->
+    <div class="item-title">ITEM 02 – COMPRADOR(ES):</div>
+    <div class="content">
+        <div class="subtitle">NOME:</div>
+        <p>{{ contrato.cliente.nome_completo|upper }}</p>
+        
+        <div class="subtitle">CPF:</div>
+        <p>{{ contrato.cliente.cpf }}</p>
+        
+        <div class="subtitle">ENDEREÇO:</div>
+        <p>{{ contrato.cliente.get_endereco_completo }}</p>
+    </div>
+    
+    <!-- ITEM 03 - INTERMEDIADOR -->
+    <div class="item-title">ITEM 03 – DO INTERMEDIADOR:</div>
+    <div class="content">
+        <div class="subtitle">NOME:</div>
+        <p>{{ config.nome_imobiliaria|upper }}</p>
+        
+        <div class="subtitle">CNPJ:</div>
+        <p>{{ config.cnpj_imobiliaria }}</p>
+        
+        <div class="subtitle">ENDEREÇO:</div>
+        <p>{{ config.endereco_imobiliaria }}</p>
+    </div>
+    
+    <!-- ITEM 04 - DESCRIÇÃO DO IMÓVEL -->
+    <div class="item-title">ITEM 04 – DESCRIÇÃO DO IMÓVEL</div>
+    <div class="content">
+        <p>
+            {{ contrato.empreendimento.descricao_completa|upper }}. 
+            Situado à {{ contrato.empreendimento.get_endereco_completo }}, 
+            {{ contrato.unidade.identificacao }}.
+        </p>
+    </div>
+    
+    <!-- ITEM 05 - PREÇO E CONDIÇÕES DE PAGAMENTO -->
+    <div class="item-title">ITEM 05 – DO PREÇO E CONDIÇÕES DE PAGAMENTO:</div>
+    <div class="content">
+        <p>
+            Que, assim como o possui, pelo presente e na melhor forma de direito, 
+            o VENDEDOR vende o supra referido imóvel, ao COMPRADOR, pelo preço certo e ajustado de 
+            <strong>R$ {{ contrato.valor_imovel|floatformat:2 }} ({{ valor_extenso }})</strong> 
+            referente ao valor do imóvel que serão pagos da seguinte forma:
+        </p>
+        
+        <ul>
+            <li>
+                <strong>R$ {{ contrato.valor_financiamento|floatformat:2 }}</strong> 
+                que serão financiados pela Caixa Econômica Federal;
+            </li>
+            <li>
+                <strong>R$ {{ contrato.valor_subsidio|floatformat:2 }}</strong> 
+                referente ao subsídio do Governo Federal;
+            </li>
+            {% if contrato.valor_entrada > 0 %}
+            <li>
+                <strong>R$ {{ contrato.valor_entrada|floatformat:2 }}</strong> 
+                referente à entrada do imóvel;
+            </li>
+            {% endif %}
+            <li>
+                <strong>R$ {{ contrato.valor_parcelamento|floatformat:2 }}</strong> 
+                que serão parcelados com a construtora em {{ contrato.numero_parcelas }} vezes de 
+                <strong>R$ {{ contrato.valor_parcela|floatformat:2 }}</strong>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="footer">
+        <p>
+            {{ config.endereco_imobiliaria }} - CEP: {{ config.cep_imobiliaria }} - Tel: {{ config.telefone_imobiliaria }}<br>
+            CNPJ: {{ config.cnpj_imobiliaria }} / {{ config.instagram_imobiliaria }} / {{ config.site_imobiliaria }}
+        </p>
+    </div>
+    
+    <div class="page-break"></div>
+    
+    <!-- ================================================ -->
+    <!-- PÁGINA 2: ITENS 06-10 -->
+    <!-- ================================================ -->
+    
+    <!-- ITEM 06 - DA MULTA -->
+    <div class="item-title">ITEM 06 – DA MULTA:</div>
+    <div class="content">
+        <p>
+            Os promissários COMPRADORES concordam desde já que em caso de não cumprimento das 
+            cláusulas e obrigações estipuladas no presente contrato, ou desistência voluntária 
+            por parte dos COMPRADORES, perderão para o VENDEDOR o valor referente à MULTA DE 
+            QUEBRA CONTRATUAL E/OU DESISTÊNCIA VOLUNTÁRIA.
+        </p>
+    </div>
+    
+    <!-- ITEM 07 - DA POSSE -->
+    <div class="item-title">ITEM 07 – DA POSSE:</div>
+    <div class="content">
+        <p>
+            Pelo presente instrumento particular de promessa de compra e venda, de um lado o 
+            promitente VENDEDOR nomeado e qualificado no item 01, senhor legítimo possuidor do 
+            IMÓVEL mencionado no item 04, e de outro lado os promissários COMPRADORES nomeados e 
+            qualificados no item 02, que o promitente VENDEDOR promete vender aos promissários 
+            COMPRADORES, e estes convencionam adquirir-lhe, o imóvel descrito no item 04, pelo 
+            preço certo e ajustado de <strong>R$ {{ contrato.valor_imovel|floatformat:2 }} 
+            ({{ valor_extenso }})</strong>, em termos e condições estipuladas no item 05, 
+            que mutuamente outorgam e aceitam a saber.
+        </p>
+        <p>
+            O promitente VENDEDOR obriga-se a entregar o imóvel aos promissários COMPRADORES, 
+            após a LIBERAÇÃO TOTAL DO CRÉDITO, conforme item 05. A partir da data em que o 
+            COMPRADOR efetivos, a alteração de titularidade.
+        </p>
+    </div>
+    
+    <!-- ITEM 08 - TEMPO DE CONTRATO -->
+    <div class="item-title">ITEM 08 - TEMPO DE CONTRATO:</div>
+    <div class="content">
+        <p>
+            O presente contrato tem a validade de <strong>{{ contrato.validade_dias }} 
+            ({% load humanize %}{{ contrato.validade_dias|apnumber|upper }} DIAS)</strong>, 
+            sendo prorrogável por mais 
+            <strong>{{ contrato.prorrogacao_dias }} ({{ contrato.prorrogacao_dias|apnumber|upper }} DIAS)</strong>, 
+            ficando caracterizada a sua finalização, no ato da assinatura da escritura definitiva 
+            ou Distrato de compra.
+        </p>
+    </div>
+    
+    <!-- ITEM 09 - LAVRATURA DA ESCRITURA -->
+    <div class="item-title">ITEM 09 - LAVRATURA DA ESCRITURA:</div>
+    <div class="content">
+        <p>
+            A escritura pública definitiva será encaminhada e lavrada em nome dos compradores e 
+            registrada junto ao Cartório de Registro de Imóveis da zona desta Comarca, esse ato 
+            de suporte é de responsabilidade do INTERMEDIADOR.
+        </p>
+    </div>
+    
+    <!-- ITEM 10 - DA AVALIAÇÃO DO IMÓVEL -->
+    <div class="item-title">ITEM 10 – DA AVALIAÇÃO DO IMÓVEL:</div>
+    <div class="content">
+        <p>
+            O(s) COMPRADOR(ES) e VENDEDOR(ES) concordam que a finalização do referido processo de 
+            financiamento está atrelada às condições de avaliação mercadológica que será efetuada 
+            pelo agente financiador, de acordo com o crédito acordado e anexado no contrato em questão. 
+            Em caso de avaliação inferior ao necessário, o presente contrato pode ser desconsiderado 
+            sem quaisquer tipos de ônus para todas as partes, e será devolvida qualquer quantia paga, 
+            a título de Reserva, integralmente no prazo de 30 dias úteis a contar a partir da data da 
+            assinatura do DISTRATO.
+        </p>
+    </div>
+    
+    <div class="footer">
+        <p>
+            {{ config.endereco_imobiliaria }} - CEP: {{ config.cep_imobiliaria }} - Tel: {{ config.telefone_imobiliaria }}<br>
+            CNPJ: {{ config.cnpj_imobiliaria }} / {{ config.instagram_imobiliaria }} / {{ config.site_imobiliaria }}
+        </p>
+    </div>
+    
+    <div class="page-break"></div>
+    
+    <!-- ================================================ -->
+    <!-- PÁGINA 3: ITENS 11-13 -->
+    <!-- ================================================ -->
+    
+    <!-- ITEM 11 - RESPONSABILIDADES DOS COMPRADORES -->
+    <div class="item-title">ITEM 11 – RESPONSABILIDADES DOS COMPRADORES:</div>
+    <div class="content">
+        <p>
+            <strong>11.1</strong> O(s) Promitentes COMPRADOR(ES) e VENDEDOR(ES) assumem desde já, 
+            total responsabilidade sobre a veracidade da documentação pessoal apresentada para aprovação 
+            do crédito e avaliação do imóvel junto à CAIXA ECONÔMICA FEDERAL.
+        </p>
+        <p>
+            <strong>11.2</strong> O Promitente COMPRADOR tem ciência que a aprovação de crédito não é 
+            de responsabilidade da INTERMEDIADORA, tratando-se de uma cortesia oferecida pela mesma;
+        </p>
+        <p>
+            <strong>11.3</strong> O COMPRADOR(ES) está ciente do atual estado em que se encontra o imóvel, 
+            objeto do presente contrato, recebendo-o nestas condições, nada mais tendo a reclamar, eis que 
+            vistoriou o mesmo, conforme AUTO DE VISITA que segue em anexo no presente contrato.
+        </p>
+        <p>
+            <strong>11.4</strong> O COMPRADOR obriga-se desde já, em manter-se com o "nome limpo", perante 
+            as instituições de crédito (SPC/SERASA) e demais instituições que possam ser examinadas pelo 
+            agente financiador. Surgindo restrições que impossibilitem o prosseguimento do processo de 
+            financiamento, o COMPRADOR obriga-se a efetuar a quitação integral dos débitos no prazo máximo 
+            de 15 (quinze) dias corridos, a contar a partir da data da notificação. A não quitação dos débitos 
+            na data estipulada CARACTERIZA-SE INFRAÇÃO CONTRATUAL.
+        </p>
+        <p>
+            <strong>11.5</strong> Após a aprovação do crédito feita pelo agente financiador, o comprador tem 
+            ciência que não é admitido que sejam realizados empréstimos de nenhuma espécie, financiamentos ou 
+            quaisquer endividamentos que levem ao comprometimento da margem de renda apresentada pelo COMPRADOR 
+            junto ao banco. Ficando caracterizada assim UMA INFRAÇÃO CONTRATUAL.
+        </p>
+    </div>
+    
+    <!-- ITEM 12 - RESPONSABILIDADES DOS VENDEDORES -->
+    <div class="item-title">ITEM 12 – RESPONSABILIDADES DOS VENDEDORES:</div>
+    <div class="content">
+        <p>
+            <strong>A)</strong> O VENDEDOR se obriga a entregar aos COMPRADORES na ocasião da lavratura da 
+            escritura, matrícula atualizada, carnê IPTU devidamente pago até a data da lavratura da escritura, 
+            luz, água e esgoto quitados, certidão de débito municipal do imóvel, certidões pessoais (justiça 
+            federal, cartório de protesto e distribuições cíveis), e demais documentos necessários para a 
+            Outorga da Escritura.
+        </p>
+        <p>
+            <strong>B)</strong> O promitente VENDEDOR compromete-se desde já a providenciar todas as quitações 
+            fiscais do referido imóvel.
+        </p>
+        <p>
+            <strong>C)</strong> O VENDEDOR se compromete com toda documentação pessoal e do imóvel tais como 
+            certidões pessoais, do imóvel, foros (se houver), laudêmio (se houver), além do custo de toda e 
+            qualquer averbação e/ou registro exigido pelo RGI antes e para que seja permitida a assinatura do 
+            Contrato junto ao agente financeiro e, consequentemente, possa ser efetivada a transferência da 
+            propriedade ao COMPRADOR.
+        </p>
+    </div>
+    
+    <!-- ITEM 13 - RESPONSABILIDADES DOS INTERMEDIÁRIOS -->
+    <div class="item-title">ITEM 13 – RESPONSABILIDADES DOS INTERMEDIÁRIOS:</div>
+    <div class="content">
+        <p>
+            O(A) CORRETOR(A) DE IMÓVEIS <strong>{{ contrato.corretor.get_full_name|upper }}</strong> 
+            inscrito no CRECI N° <strong>{{ contrato.corretor.creci }}</strong> responsável pela intermediação 
+            do referido imóvel descrito no Item 04, assume desde já, total responsabilidade sobre conferência, 
+            veracidade e recebimento das cópias apresentadas pelo COMPRADOR, no ato da aprovação de crédito 
+            junto à CAIXA ECONÔMICA FEDERAL.
+        </p>
+    </div>
+    
+    <div class="footer">
+        <p>
+            {{ config.endereco_imobiliaria }} - CEP: {{ config.cep_imobiliaria }} - Tel: {{ config.telefone_imobiliaria }}<br>
+            CNPJ: {{ config.cnpj_imobiliaria }} / {{ config.instagram_imobiliaria }} / {{ config.site_imobiliaria }}
+        </p>
+    </div>
+    
+    <div class="page-break"></div>
+    
+    <!-- ================================================ -->
+    <!-- PÁGINA 4: ITENS 14-15 -->
+    <!-- ================================================ -->
+    
+    <!-- ITEM 14 - HONORÁRIOS DE INTERMEDIAÇÃO -->
+    <div class="item-title">ITEM 14 - HONORÁRIOS DE INTERMEDIAÇÃO – CORRETAGEM</div>
+    <div class="content">
+        <p>
+            Fica ajustado que o pagamento dos honorários de intermediação caberá exclusivamente ao VENDEDOR, 
+            ajustados em {{ contrato.empreendimento.taxa_corretagem_percentual }}% referente ao valor dessa transação.
+        </p>
+    </div>
+    
+    <!-- ITEM 15 - DECLARAÇÕES FINAIS -->
+    <div class="item-title">ITEM 15 – DECLARAÇÕES FINAIS:</div>
+    <div class="content">
+        <p>
+            <strong>A)</strong> O promissário VENDEDOR concorda que todas as despesas com a transferência de débito 
+            tais como: imposto de transmissão (ITBI), Taxas de Avaliação (taxa de transferência, seguro antecipado, 
+            FCVS, taxa de inscrição e expediente), certidões pessoais, registro de cartório, correm exclusivamente 
+            por sua conta.
+        </p>
+        <p>
+            <strong>B)</strong> O promitente VENDEDOR declara ter feito a venda boa, firme e valiosa, e que responderá 
+            por evicção de direito.
+        </p>
+        <p>
+            <strong>C)</strong> Os COMPRADORES e VENDEDORES concordam desde já, que em caso de perda de emprego por 
+            parte dos compradores, o presente contrato pode ser rescindido, sem qualquer tipo de ônus para ambas as 
+            partes, e será devolvido INTEGRALMENTE qualquer valor referente a Reserva do imóvel, no prazo de 30 dias 
+            úteis a contar a partir da data da assinatura do DISTRATO. E os COMPRADORES obrigam-se a entregar a 
+            documentação comprobatória da baixa do emprego (Carteira de Trabalho com a baixa do atual emprego) no ato 
+            da assinatura do mesmo.
+        </p>
+        <p>
+            <strong>D)</strong> Fica declarado, que este instrumento é irrevogável, estando incurso nos Artigos 417 a 
+            420 do Código Civil brasileiro.
+        </p>
+        <p>
+            <strong>E)</strong> As partes elegem o foro da comarca de SÃO GONÇALO, para dirimir quaisquer dúvidas 
+            oriundas do presente instrumento, renunciando a qualquer outro por mais especial que se apresente.
+        </p>
+        <p>
+            <strong>F)</strong> O presente instrumento obriga em todos os seus termos, itens e condições os contratantes 
+            por si mesmos, seus bens, herdeiros e sucessores a qualquer título.
+        </p>
+        <p style="margin-top: 30px;">
+            E, assim, por se acharem justos e contratados, as partes assinam o presente instrumento em 03 (três) vias de 
+            igual teor e forma para um só efeito.
+        </p>
+    </div>
+    
+    <div class="footer">
+        <p>
+            {{ config.endereco_imobiliaria }} - CEP: {{ config.cep_imobiliaria }} - Tel: {{ config.telefone_imobiliaria }}<br>
+            CNPJ: {{ config.cnpj_imobiliaria }} / {{ config.instagram_imobiliaria }} / {{ config.site_imobiliaria }}
+        </p>
+    </div>
+    
+    <div class="page-break"></div>
+    
+    <!-- ================================================ -->
+    <!-- PÁGINA 5: ASSINATURAS -->
+    <!-- ================================================ -->
+    
+    <div class="signature-section">
+        <p style="text-align: center; margin-bottom: 40px;">
+            <strong>{{ contrato.empreendimento.cidade|upper }}, {{ contrato.data_assinatura|date:"d \d\e F \d\e Y"|upper }}</strong>
+        </p>
+        
+        <div class="signature-line"></div>
+        <div class="signature-info">
+            <strong>VENDEDOR: {{ contrato.empreendimento.construtora.razao_social|upper }}</strong><br>
+            CNPJ: {{ contrato.empreendimento.construtora.cnpj }}
+        </div>
+        
+        <div class="signature-line"></div>
+        <div class="signature-info">
+            <strong>COMPRADOR: {{ contrato.cliente.nome_completo|upper }}</strong><br>
+            CPF: {{ contrato.cliente.cpf }}
+        </div>
+        
+        <div class="signature-line"></div>
+        <div class="signature-info">
+            <strong>INTERMEDIADOR: {{ config.nome_imobiliaria|upper }}</strong><br>
+            CNPJ: {{ config.cnpj_imobiliaria }}
+        </div>
+        
+        <div class="signature-line"></div>
+        <div class="signature-info">
+            <strong>CORRETOR: {{ contrato.corretor.get_full_name|upper }}</strong><br>
+            CRECI: {{ contrato.corretor.creci }}
+        </div>
+        
+        {% if contrato.testemunha1_nome %}
+        <div class="signature-line"></div>
+        <div class="signature-info">
+            <strong>Testemunha 1</strong><br>
+            CPF:
+        </div>
+        {% endif %}
+        
+        {% if contrato.testemunha2_nome %}
+        <div class="signature-line"></div>
+        <div class="signature-info">
+            <strong>Testemunha 2</strong><br>
+            CPF:
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="footer" style="margin-top: 60px;">
+        <p style="font-size: 8pt;">
+            ESTA FOLHA É PARTE INTEGRANTE DO INSTRUMENTO PARTICULAR DE COMPROMISSO DE COMPRA E VENDA<br>
+            E OUTRAS AVENÇAS DE IMÓVEL EM CONSTRUÇÃO SITUADO À {{ contrato.empreendimento.get_endereco_completo|upper }}.
+        </p>
+        <p style="margin-top: 20px;">
+            {{ config.endereco_imobiliaria }} - CEP: {{ config.cep_imobiliaria }} - Tel: {{ config.telefone_imobiliaria }}<br>
+            CNPJ: {{ config.cnpj_imobiliaria }} / {{ config.instagram_imobiliaria }} / {{ config.site_imobiliaria }}
+        </p>
+    </div>
+    
+    <div class="page-break"></div>
+    
+    <!-- ================================================ -->
+    <!-- PÁGINA 6: AUTO DE VISITA -->
+    <!-- ================================================ -->
+    
+    <h2>AUTO DE VISITA A IMÓVEL</h2>
+    
+    <div style="text-align: justify; margin-top: 60px;">
+        <p>
+            EU, <strong>{{ contrato.cliente.nome_completo|upper }}</strong>, portador(a) do CPF: <strong>{{ contrato.cliente.cpf }}</strong>, 
+            declaro na qualidade de promitente COMPRADOR, termos realizado visita no imóvel situado à 
+            <strong>{{ contrato.empreendimento.get_endereco_completo }}</strong>, {{ contrato.unidade.identificacao }}. 
+            E ter tido todos os esclarecimentos necessários referentes ao financiamento, tempo e valor das parcelas, 
+            projeto da construção, descriminação das partes comuns, e demais informações sobre a compra do imóvel em questão.
+        </p>
+        
+        <p style="margin-top: 30px;">
+            Estamos de acordo em ter realizado a compra do imóvel Financiado através da CAIXA ECONÔMICA FEDERAL, 
+            no estado em que ele se encontra, sendo a venda realizada através da Imobiliária 
+            <strong>{{ config.nome_imobiliaria }}</strong>, CNPJ: {{ config.cnpj_imobiliaria }}.
+        </p>
+    </div>
+    
+    <div style="margin-top: 100px;">
+        <p style="text-align: center; margin-bottom: 40px;">
+            <strong>{{ contrato.empreendimento.cidade|upper }}, {{ contrato.data_assinatura|date:"d \d\e F \d\e Y"|upper }}</strong>
+        </p>
+        
+        <div class="signature-line"></div>
+        <div class="signature-info">
+            <strong>COMPRADOR: {{ contrato.cliente.nome_completo|upper }}</strong><br>
+            CPF: {{ contrato.cliente.cpf }}
+        </div>
+    </div>
+    
+    <div class="footer" style="margin-top: 80px;">
+        <p>
+            {{ config.endereco_imobiliaria }} - CEP: {{ config.cep_imobiliaria }} - Tel: {{ config.telefone_imobiliaria }}<br>
+            CNPJ: {{ config.cnpj_imobiliaria }} / {{ config.instagram_imobiliaria }} / {{ config.site_imobiliaria }}
+        </p>
+    </div>
+</body>
+</html>

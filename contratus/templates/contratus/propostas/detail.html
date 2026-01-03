@@ -1,0 +1,170 @@
+{% extends 'contratus/base.html' %}
+
+{% block title %}Proposta {{ proposta.numero_proposta }} - Sistema de Contratos{% endblock %}
+{% block page_title %}Proposta {{ proposta.numero_proposta }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Card Principal -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-file-earmark-richtext"></i> Detalhes da Proposta</span>
+                <div>
+                    {% if proposta.status == 'aprovada' and not proposta.contrato %}
+                    <a href="{% url 'contrato_create_from_proposta' proposta.pk %}" class="btn btn-sm btn-success">
+                        <i class="bi bi-file-earmark-check"></i> Gerar Contrato
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'proposta_gerar_pdf' proposta.pk %}" class="btn btn-sm btn-danger" target="_blank">
+                        <i class="bi bi-file-pdf"></i> Gerar PDF
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Status -->
+                <div class="mb-4">
+                    <h5>Status:</h5>
+                    {% if proposta.status == 'rascunho' %}
+                    <span class="badge bg-secondary" style="font-size: 1.2rem;">{{ proposta.get_status_display }}</span>
+                    {% elif proposta.status == 'enviada' %}
+                    <span class="badge bg-warning text-dark" style="font-size: 1.2rem;">{{ proposta.get_status_display }}</span>
+                    {% elif proposta.status == 'aprovada' %}
+                    <span class="badge bg-success" style="font-size: 1.2rem;">{{ proposta.get_status_display }}</span>
+                    {% elif proposta.status == 'recusada' %}
+                    <span class="badge bg-danger" style="font-size: 1.2rem;">{{ proposta.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-secondary" style="font-size: 1.2rem;">{{ proposta.get_status_display }}</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Empreendimento -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-buildings"></i> Empreendimento</h5>
+                    <p>
+                        <strong>Nome:</strong> {{ proposta.empreendimento.nome }}<br>
+                        <strong>Endereço:</strong> {{ proposta.empreendimento.get_endereco_completo }}<br>
+                        <strong>Descrição:</strong> {{ proposta.empreendimento.descricao_completa }}<br>
+                        <strong>Unidade:</strong> {{ proposta.unidade.identificacao }}
+                    </p>
+                </div>
+                
+                <!-- Cliente -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-person"></i> Cliente</h5>
+                    <p>
+                        <strong>Nome:</strong> {{ proposta.cliente.nome_completo }}<br>
+                        <strong>CPF:</strong> {{ proposta.cliente.cpf }}<br>
+                        <strong>Telefone:</strong> {{ proposta.cliente.telefone }}<br>
+                        <strong>Endereço:</strong> {{ proposta.cliente.get_endereco_completo }}<br>
+                        <strong>Origem:</strong> {{ proposta.cliente.get_origem_display }}
+                    </p>
+                </div>
+                
+                <!-- Corretor -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-person-badge"></i> Corretor</h5>
+                    <p>
+                        <strong>Nome:</strong> {{ proposta.corretor.get_full_name }}<br>
+                        <strong>CRECI:</strong> {{ proposta.corretor.creci }}
+                    </p>
+                </div>
+                
+                <!-- Valores -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-currency-dollar"></i> Valores da Negociação</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Engenharia Necessária:</th>
+                            <td>R$ {{ proposta.valor_engenharia_necessaria|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Valor do Imóvel:</th>
+                            <td>R$ {{ proposta.valor_imovel|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Financiamento:</th>
+                            <td>R$ {{ proposta.valor_financiamento|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Subsídio:</th>
+                            <td>R$ {{ proposta.valor_subsidio|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>FGTS:</th>
+                            <td>R$ {{ proposta.valor_fgts|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Sinal:</th>
+                            <td>R$ {{ proposta.valor_sinal|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Entrada:</th>
+                            <td>R$ {{ proposta.valor_entrada|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="table-info">
+                            <th>Parcelamento SEM Juros (para contrato):</th>
+                            <td><strong>R$ {{ proposta.valor_parcelamento_sem_juros|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr class="table-warning">
+                            <th>Parcelamento COM 50% Juros (para proposta):</th>
+                            <td><strong>R$ {{ proposta.valor_parcelamento_com_juros|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Número de Parcelas:</th>
+                            <td>{{ proposta.numero_parcelas }}x</td>
+                        </tr>
+                        <tr>
+                            <th>Valor da Parcela:</th>
+                            <td>R$ {{ proposta.valor_parcela|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="table-success">
+                            <th>TOTAL DA APROVAÇÃO:</th>
+                            <td><strong>R$ {{ proposta.total_aprovacao|floatformat:2 }}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Observações -->
+                {% if proposta.observacoes %}
+                <div class="mb-4">
+                    <h5><i class="bi bi-file-text"></i> Observações</h5>
+                    <p>{{ proposta.observacoes|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                <!-- Informações da Proposta -->
+                <div class="mb-4">
+                    <h5><i class="bi bi-info-circle"></i> Informações</h5>
+                    <p>
+                        <strong>Número:</strong> {{ proposta.numero_proposta }}<br>
+                        <strong>Data de Criação:</strong> {{ proposta.data_criacao|date:"d/m/Y H:i" }}<br>
+                        {% if proposta.data_envio %}
+                        <strong>Data de Envio:</strong> {{ proposta.data_envio|date:"d/m/Y H:i" }}<br>
+                        {% endif %}
+                        <strong>Validade:</strong> {{ proposta.validade_dias }} dias
+                    </p>
+                </div>
+                
+                <!-- Ações -->
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'proposta_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                    <div>
+                        {% if proposta.status == 'aprovada' and not proposta.contrato %}
+                        <a href="{% url 'contrato_create_from_proposta' proposta.pk %}" class="btn btn-success">
+                            <i class="bi bi-file-earmark-check"></i> Gerar Contrato
+                        </a>
+                        {% elif proposta.contrato %}
+                        <a href="{% url 'contrato_detail' proposta.contrato.pk %}" class="btn btn-info">
+                            <i class="bi bi-eye"></i> Ver Contrato
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

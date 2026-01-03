@@ -1,0 +1,241 @@
+{% extends 'contratus/base.html' %}
+
+{% block title %}Nova Proposta - Sistema de Contratos{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-file-earmark-plus"></i> {{ title }}
+            </div>
+            <div class="card-body">
+                <form method="post" id="propostaForm">
+                    {% csrf_token %}
+                    
+                    <!-- Empreendimento e Unidade -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Empreendimento *</label>
+                            {{ form.empreendimento }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Unidade *</label>
+                            {{ form.unidade }}
+                            <small class="text-muted">Selecione o empreendimento primeiro</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Cliente -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Cliente *</label>
+                            <div class="input-group">
+                                {{ form.cliente }}
+                                <a href="{% url 'cliente_create' %}" class="btn btn-outline-secondary" target="_blank">
+                                    <i class="bi bi-plus"></i> Novo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-currency-dollar"></i> Valores da Negociação</h5>
+                    
+                    <!-- Valores Principais -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Engenharia Necessária *</label>
+                            {{ form.valor_engenharia_necessaria }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Valor do Imóvel *</label>
+                            {{ form.valor_imovel }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Valor do Financiamento *</label>
+                            {{ form.valor_financiamento }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Valor do Subsídio</label>
+                            {{ form.valor_subsidio }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">FGTS</label>
+                            {{ form.valor_fgts }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Sinal</label>
+                            {{ form.valor_sinal }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Entrada</label>
+                            {{ form.valor_entrada }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-calculator"></i> Parcelamento Construtora</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Valor sem Juros (para contrato) *</label>
+                            {{ form.valor_parcelamento_sem_juros }}
+                            <small class="text-muted d-block">Esse valor será usado no contrato</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Número de Parcelas *</label>
+                            {{ form.numero_parcelas }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Valor da Parcela (com 50% juros) *</label>
+                            {{ form.valor_parcela }}
+                            <small class="text-muted d-block" id="info-parcela">
+                                Será calculado automaticamente
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Cálculo Automático:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Valor COM juros (50%)</strong> = Valor sem juros × 1,5</li>
+                            <li><strong>Valor da Parcela</strong> = Valor COM juros ÷ Número de parcelas</li>
+                            <li><strong>Total da Aprovação</strong> = Financiamento + Subsídio + FGTS</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- ✅ RESUMO DO PARCELAMENTO -->
+                    <div class="card bg-light mb-3" id="resumo-parcelamento" style="display: none;">
+                        <div class="card-body">
+                            <h6 class="card-title"><i class="bi bi-calculator-fill"></i> Resumo do Parcelamento</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Valor SEM juros:</strong><br>
+                                    <span id="resumo-sem-juros" class="text-primary fs-5">R$ 0,00</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Valor COM juros (50%):</strong><br>
+                                    <span id="resumo-com-juros" class="text-success fs-5">R$ 0,00</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Valor da Parcela:</strong><br>
+                                    <span id="resumo-parcela" class="text-danger fs-5">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Observações -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Observações</label>
+                            {{ form.observacoes }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'proposta_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-save"></i> Salvar Proposta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    
+    // ══════════════════════════════════════════════════════════════
+    // CARREGAR UNIDADES QUANDO EMPREENDIMENTO É SELECIONADO
+    // ══════════════════════════════════════════════════════════════
+    $('#id_empreendimento').change(function() {
+        var empreendimentoId = $(this).val();
+        
+        if (empreendimentoId) {
+            $.ajax({
+                url: '/api/empreendimento/' + empreendimentoId + '/',
+                success: function(data) {
+                    // Preencher unidades disponíveis
+                    var $unidadeSelect = $('#id_unidade');
+                    $unidadeSelect.empty();
+                    $unidadeSelect.append('<option value="">---------</option>');
+                    
+                    $.each(data.unidades, function(i, unidade) {
+                        if (unidade.status === 'disponivel') {
+                            $unidadeSelect.append(
+                                $('<option></option>').val(unidade.id).text(unidade.identificacao)
+                            );
+                        }
+                    });
+                    
+                    // ✅ Preencher valores automaticamente
+                    $('#id_valor_imovel').val(data.valor_imovel);
+                    $('#id_valor_engenharia_necessaria').val(data.valor_engenharia_necessaria);
+                }
+            });
+        }
+    });
+    
+    // ══════════════════════════════════════════════════════════════
+    // ✅ CÁLCULO AUTOMÁTICO DE PARCELAS COM JUROS (50%)
+    // ══════════════════════════════════════════════════════════════
+    
+    function calcularParcelas() {
+        var valorSemJuros = parseFloat($('#id_valor_parcelamento_sem_juros').val()) || 0;
+        var numeroParcelas = parseInt($('#id_numero_parcelas').val()) || 0;
+        
+        if (valorSemJuros > 0 && numeroParcelas > 0) {
+            // Calcular valor COM 50% de juros
+            var valorComJuros = valorSemJuros * 1.5;
+            
+            // Calcular valor da parcela
+            var valorParcela = valorComJuros / numeroParcelas;
+            
+            // Preencher campo de valor da parcela
+            $('#id_valor_parcela').val(valorParcela.toFixed(2));
+            
+            // ✅ Mostrar resumo visual
+            $('#resumo-parcelamento').show();
+            $('#resumo-sem-juros').text('R$ ' + valorSemJuros.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            $('#resumo-com-juros').text('R$ ' + valorComJuros.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            $('#resumo-parcela').text('R$ ' + valorParcela.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            
+            // Atualizar mensagem
+            $('#info-parcela').html(
+                '<span class="text-success"><i class="bi bi-check-circle-fill"></i> ' + 
+                numeroParcelas + 'x de R$ ' + 
+                valorParcela.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) +
+                '</span>'
+            );
+        } else {
+            $('#resumo-parcelamento').hide();
+            $('#info-parcela').text('Preencha os campos acima');
+        }
+    }
+    
+    // Disparar cálculo quando usuário alterar os campos
+    $('#id_valor_parcelamento_sem_juros, #id_numero_parcelas').on('input change', function() {
+        calcularParcelas();
+    });
+    
+    // Calcular na inicialização (caso esteja editando)
+    calcularParcelas();
+});
+</script>
+{% endblock %}
