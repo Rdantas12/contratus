@@ -3,132 +3,920 @@
 {% block title %}Login - Sistema de Contratos{% endblock %}
 
 {% block login_content %}
+
 <style>
-    .login-container {
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    /* ======================== TELA DE BOOT HUD ======================== */
+    
+    .hud-boot-screen {
+        position: fixed;
+        inset: 0;
+        background: #000814;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 1;
+        transition: opacity 1s ease-out;
+        overflow: hidden;
+    }
+
+    .hud-boot-screen.fade-out {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Grid de fundo técnico */
+    .hud-background {
+        position: absolute;
+        inset: 0;
+        background: 
+            linear-gradient(0deg, transparent 24%, rgba(0, 170, 255, 0.05) 25%, rgba(0, 170, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 170, 255, 0.05) 75%, rgba(0, 170, 255, 0.05) 76%, transparent 77%, transparent),
+            linear-gradient(90deg, transparent 24%, rgba(0, 170, 255, 0.05) 25%, rgba(0, 170, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 170, 255, 0.05) 75%, rgba(0, 170, 255, 0.05) 76%, transparent 77%, transparent);
+        background-size: 50px 50px;
+        opacity: 0.3;
+    }
+
+    /* Container principal do HUD */
+    .hud-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* ======================== CÍRCULOS CENTRAIS ESTILO JARVIS ======================== */
+    
+    .hud-core-system {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Círculo externo principal */
+    .hud-circle-outer {
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        border: 2px solid rgba(0, 170, 255, 0.4);
+        border-radius: 50%;
+        animation: rotate-slow 20s linear infinite;
+    }
+
+    /* Marcadores no círculo externo */
+    .hud-circle-outer::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: 
+            repeating-conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                transparent 8deg,
+                rgba(0, 170, 255, 0.6) 8deg,
+                rgba(0, 170, 255, 0.6) 10deg
+            );
+        border-radius: 50%;
+        mask: radial-gradient(circle, transparent 195px, black 195px, black 200px, transparent 200px);
+    }
+
+    /* Círculo médio 1 */
+    .hud-circle-mid1 {
+        position: absolute;
+        width: 320px;
+        height: 320px;
+        border: 2px solid rgba(0, 170, 255, 0.5);
+        border-radius: 50%;
+        border-style: dashed;
+        border-spacing: 10px;
+        animation: rotate-medium 15s linear infinite reverse;
+    }
+
+    /* Círculo médio 2 com segmentos */
+    .hud-circle-mid2 {
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        animation: rotate-fast 10s linear infinite;
+    }
+
+    .hud-circle-mid2::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        border-top-color: rgba(0, 170, 255, 0.8);
+        border-right-color: rgba(0, 170, 255, 0.4);
+    }
+
+    /* Círculo interno rotativo */
+    .hud-circle-inner {
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        border: 3px solid rgba(0, 170, 255, 0.6);
+        border-radius: 50%;
+        animation: rotate-fast 8s linear infinite reverse;
+    }
+
+    .hud-circle-inner::after {
+        content: '';
+        position: absolute;
+        inset: 15px;
+        border-radius: 50%;
+        border: 2px dashed rgba(0, 170, 255, 0.5);
+        animation: rotate-medium 12s linear infinite;
+    }
+
+    /* Núcleo central pulsante */
+    .hud-core {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(0, 170, 255, 0.8) 0%, rgba(0, 100, 200, 0.4) 50%, transparent 70%);
+        border-radius: 50%;
+        border: 2px solid rgba(0, 170, 255, 0.8);
+        box-shadow: 
+            0 0 30px rgba(0, 170, 255, 0.8),
+            0 0 60px rgba(0, 170, 255, 0.5),
+            inset 0 0 30px rgba(0, 170, 255, 0.3);
+        animation: pulse-core 2s ease-in-out infinite;
+        z-index: 10;
+    }
+
+    /* Logo no centro */
+    .hud-core-logo {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 20px;
+        font-weight: 900;
+        color: #ffffff;
+        text-shadow: 0 0 10px rgba(0, 170, 255, 1);
+        letter-spacing: 3px;
+    }
+
+    /* Linhas de conexão radiais */
+    .hud-line {
+        position: absolute;
+        width: 2px;
+        height: 150px;
+        background: linear-gradient(to bottom, rgba(0, 170, 255, 0.8), transparent);
+        transform-origin: bottom center;
+        animation: scan-line 4s ease-in-out infinite;
+    }
+
+    .hud-line:nth-child(1) { transform: rotate(0deg) translateY(-200px); animation-delay: 0s; }
+    .hud-line:nth-child(2) { transform: rotate(45deg) translateY(-200px); animation-delay: 0.5s; }
+    .hud-line:nth-child(3) { transform: rotate(90deg) translateY(-200px); animation-delay: 1s; }
+    .hud-line:nth-child(4) { transform: rotate(135deg) translateY(-200px); animation-delay: 1.5s; }
+    .hud-line:nth-child(5) { transform: rotate(180deg) translateY(-200px); animation-delay: 2s; }
+    .hud-line:nth-child(6) { transform: rotate(225deg) translateY(-200px); animation-delay: 2.5s; }
+    .hud-line:nth-child(7) { transform: rotate(270deg) translateY(-200px); animation-delay: 3s; }
+    .hud-line:nth-child(8) { transform: rotate(315deg) translateY(-200px); animation-delay: 3.5s; }
+
+    /* ======================== PAINÉIS LATERAIS HUD ======================== */
+    
+    /* Painel esquerdo */
+    .hud-panel-left {
+        position: absolute;
+        left: 50px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 280px;
+        opacity: 0;
+        animation: slide-in-left 0.8s forwards;
+        animation-delay: 0.5s;
+    }
+
+    .hud-panel-right {
+        position: absolute;
+        right: 50px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 280px;
+        opacity: 0;
+        animation: slide-in-right 0.8s forwards;
+        animation-delay: 0.5s;
+    }
+
+    .hud-panel-box {
+        background: rgba(0, 20, 40, 0.7);
+        border: 1px solid rgba(0, 170, 255, 0.4);
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        position: relative;
+        backdrop-filter: blur(5px);
+    }
+
+    .hud-panel-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 3px;
+        height: 100%;
+        background: linear-gradient(to bottom, #00aaff, transparent);
+    }
+
+    .hud-panel-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        color: #00aaff;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .hud-panel-title::before {
+        content: '▸';
+        color: #00aaff;
+    }
+
+    .hud-data-line {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 6px 0;
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(0, 170, 255, 0.1);
+    }
+
+    .hud-data-value {
+        color: #00ff88;
+        font-weight: 600;
+    }
+
+    /* Barra de progresso */
+    .hud-progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 8px;
+        border: 1px solid rgba(0, 170, 255, 0.3);
+    }
+
+    .hud-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00aaff, #00ff88);
+        animation: progress-load 2s ease-in-out forwards;
+        box-shadow: 0 0 10px rgba(0, 170, 255, 0.8);
+    }
+
+    /* ======================== INDICADORES DE CANTO ======================== */
+    
+    .hud-corner {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        border: 2px solid rgba(0, 170, 255, 0.6);
+    }
+
+    .hud-corner-tl {
+        top: 30px;
+        left: 30px;
+        border-right: none;
+        border-bottom: none;
+    }
+
+    .hud-corner-tr {
+        top: 30px;
+        right: 30px;
+        border-left: none;
+        border-bottom: none;
+    }
+
+    .hud-corner-bl {
+        bottom: 30px;
+        left: 30px;
+        border-right: none;
+        border-top: none;
+    }
+
+    .hud-corner-br {
+        bottom: 30px;
+        right: 30px;
+        border-left: none;
+        border-top: none;
+    }
+
+    /* ======================== MENSAGENS DE BOOT ======================== */
+    
+    .hud-boot-messages {
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 600px;
+        max-width: 90vw;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 14px;
+    }
+
+    .boot-msg {
+        color: #00aaff;
+        margin: 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        opacity: 0;
+        animation: msg-appear 0.4s forwards;
+    }
+
+    .boot-msg:nth-child(1) { animation-delay: 0.8s; }
+    .boot-msg:nth-child(2) { animation-delay: 1.3s; }
+    .boot-msg:nth-child(3) { animation-delay: 1.8s; }
+    .boot-msg:nth-child(4) { animation-delay: 2.3s; }
+    .boot-msg:nth-child(5) { animation-delay: 2.8s; }
+    .boot-msg:nth-child(6) { animation-delay: 3.3s; }
+
+    .boot-msg::before {
+        content: '>';
+        color: #00aaff;
+        font-weight: bold;
+    }
+
+    .boot-status {
+        margin-left: auto;
+        color: #00ff88;
+        font-weight: 700;
+        font-size: 12px;
+    }
+
+    /* ======================== ANIMAÇÕES ======================== */
+    
+    @keyframes rotate-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes rotate-medium {
+        from { transform: rotate(360deg); }
+        to { transform: rotate(0deg); }
+    }
+
+    @keyframes rotate-fast {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse-core {
+        0%, 100% {
+            box-shadow: 
+                0 0 30px rgba(0, 170, 255, 0.8),
+                0 0 60px rgba(0, 170, 255, 0.5),
+                inset 0 0 30px rgba(0, 170, 255, 0.3);
+        }
+        50% {
+            box-shadow: 
+                0 0 50px rgba(0, 170, 255, 1),
+                0 0 100px rgba(0, 170, 255, 0.7),
+                inset 0 0 50px rgba(0, 170, 255, 0.5);
+        }
+    }
+
+    @keyframes scan-line {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+    }
+
+    @keyframes slide-in-left {
+        from { transform: translateX(-100px) translateY(-50%); opacity: 0; }
+        to { transform: translateX(0) translateY(-50%); opacity: 1; }
+    }
+
+    @keyframes slide-in-right {
+        from { transform: translateX(100px) translateY(-50%); opacity: 0; }
+        to { transform: translateX(0) translateY(-50%); opacity: 1; }
+    }
+
+    @keyframes msg-appear {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes progress-load {
+        from { width: 0%; }
+        to { width: 100%; }
+    }
+
+    /* ======================== TELA DE LOGIN ======================== */
+    
+    .login-wrapper {
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #000814;
+        position: relative;
+        overflow: hidden;
+        opacity: 0;
+        animation: fade-in-login 1s forwards;
+        animation-delay: 4.5s;
     }
-    
+
+    .login-wrapper::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: 
+            linear-gradient(0deg, transparent 24%, rgba(0, 170, 255, 0.03) 25%, rgba(0, 170, 255, 0.03) 26%, transparent 27%, transparent 74%, rgba(0, 170, 255, 0.03) 75%, rgba(0, 170, 255, 0.03) 76%, transparent 77%, transparent),
+            linear-gradient(90deg, transparent 24%, rgba(0, 170, 255, 0.03) 25%, rgba(0, 170, 255, 0.03) 26%, transparent 27%, transparent 74%, rgba(0, 170, 255, 0.03) 75%, rgba(0, 170, 255, 0.03) 76%, transparent 77%, transparent);
+        background-size: 50px 50px;
+    }
+
+    @keyframes fade-in-login {
+        to { opacity: 1; }
+    }
+
     .login-card {
         width: 100%;
-        max-width: 450px;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        overflow: hidden;
-    }
-    
-    .login-header {
-        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-        color: white;
-        padding: 40px 30px;
-        text-align: center;
-    }
-    
-    .login-header h2 {
-        margin: 0;
-        font-size: 2rem;
-        font-weight: bold;
-    }
-    
-    .login-header p {
-        margin: 10px 0 0 0;
-        opacity: 0.9;
-    }
-    
-    .login-body {
-        padding: 40px 30px;
-    }
-    
-    .form-control {
-        padding: 12px;
+        max-width: 460px;
+        background: rgba(0, 20, 40, 0.85);
+        backdrop-filter: blur(20px);
         border-radius: 8px;
-        border: 1px solid #ddd;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.6),
+            0 0 0 1px rgba(0, 170, 255, 0.3);
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
     }
-    
+
+    /* Borda animada no topo */
+    .login-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #00aaff, transparent);
+        animation: border-slide 3s ease-in-out infinite;
+    }
+
+    @keyframes border-slide {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+    }
+
+    .login-header {
+        text-align: center;
+        padding: 50px 40px 30px;
+        background: linear-gradient(180deg, rgba(0, 170, 255, 0.05) 0%, transparent 100%);
+        border-bottom: 1px solid rgba(0, 170, 255, 0.2);
+        position: relative;
+    }
+
+    /* Ícone do sistema */
+    .login-system-icon {
+        width: 90px;
+        height: 90px;
+        margin: 0 auto 25px;
+        position: relative;
+    }
+
+    .icon-hexagon {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, rgba(0, 170, 255, 0.15) 0%, rgba(0, 100, 200, 0.15) 100%);
+        clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid rgba(0, 170, 255, 0.5);
+        position: relative;
+        animation: icon-rotate 10s linear infinite;
+    }
+
+    .icon-hexagon i {
+        font-size: 36px;
+        color: #00aaff;
+        filter: drop-shadow(0 0 8px rgba(0, 170, 255, 0.8));
+        animation: icon-rotate 10s linear infinite reverse;
+    }
+
+    @keyframes icon-rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .login-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 36px;
+        font-weight: 900;
+        color: #ffffff;
+        margin: 0 0 10px 0;
+        letter-spacing: 6px;
+        text-shadow: 0 0 20px rgba(0, 170, 255, 0.6);
+    }
+
+    .login-subtitle {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        margin: 0;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .login-body {
+        padding: 40px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        color: #00aaff;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .form-label i {
+        margin-right: 8px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 14px 18px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(0, 170, 255, 0.3);
+        border-radius: 4px;
+        color: #ffffff;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
     .form-control:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        outline: none;
+        background: rgba(0, 0, 0, 0.5);
+        border-color: #00aaff;
+        box-shadow: 0 0 15px rgba(0, 170, 255, 0.3);
     }
-    
+
     .btn-login {
         width: 100%;
-        padding: 12px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        border-radius: 8px;
-        color: white;
-        transition: transform 0.2s;
+        padding: 16px;
+        background: linear-gradient(135deg, #005599 0%, #00aaff 100%);
+        border: 1px solid rgba(0, 170, 255, 0.5);
+        border-radius: 4px;
+        color: #ffffff;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
-    
+
+    .btn-login::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-login:hover::before {
+        left: 100%;
+    }
+
     .btn-login:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 8px 25px rgba(0, 170, 255, 0.5);
+        border-color: #00aaff;
     }
-    
-    .login-icon {
-        font-size: 4rem;
+
+    .login-footer {
+        padding: 20px 40px;
+        text-align: center;
+        border-top: 1px solid rgba(0, 170, 255, 0.1);
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 4px;
         margin-bottom: 20px;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 14px;
+        border-left: 3px solid;
+    }
+
+    .alert-danger {
+        background: rgba(220, 53, 69, 0.15);
+        border-color: #dc3545;
+        color: #ff6b6b;
+    }
+
+    /* ======================== RESPONSIVIDADE ======================== */
+    
+    @media (max-width: 1024px) {
+        .hud-panel-left,
+        .hud-panel-right {
+            display: none;
+        }
+
+        .hud-core-system {
+            transform: scale(0.8);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .login-card {
+            margin: 20px;
+        }
+
+        .hud-core-system {
+            transform: scale(0.6);
+        }
+
+        .hud-boot-messages {
+            font-size: 12px;
+        }
+
+        .hud-corner {
+            width: 40px;
+            height: 40px;
+        }
+
+        .login-title {
+            font-size: 28px;
+            letter-spacing: 4px;
+        }
     }
 </style>
 
-<div class="login-container">
-    <div class="login-card">
-        <div class="login-header">
-            <i class="bi bi-file-earmark-text login-icon"></i>
-            <h2>ContratuS</h2>
-            <p>Sistema de Gestão de Contratos Imobiliários</p>
-        </div>
-        
-        <div class="login-body">
-            {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<!-- ======================== TELA DE BOOT HUD ======================== -->
+<div class="hud-boot-screen" id="hudBoot">
+    <!-- Grid de fundo -->
+    <div class="hud-background"></div>
+
+    <!-- Cantos decorativos -->
+    <div class="hud-corner hud-corner-tl"></div>
+    <div class="hud-corner hud-corner-tr"></div>
+    <div class="hud-corner hud-corner-bl"></div>
+    <div class="hud-corner hud-corner-br"></div>
+
+    <div class="hud-container">
+        <!-- Painel esquerdo -->
+        <div class="hud-panel-left">
+            <div class="hud-panel-box">
+                <div class="hud-panel-title">Status do Sistema</div>
+                <div class="hud-data-line">
+                    <span>Núcleo</span>
+                    <span class="hud-data-value">ONLINE</span>
+                </div>
+                <div class="hud-data-line">
+                    <span>Segurança</span>
+                    <span class="hud-data-value">ATIVO</span>
+                </div>
+                <div class="hud-data-line">
+                    <span>Banco de Dados</span>
+                    <span class="hud-data-value">OK</span>
+                </div>
+                <div class="hud-progress-bar">
+                    <div class="hud-progress-fill"></div>
+                </div>
             </div>
-            {% endfor %}
-            {% endif %}
-            
-            <form method="post">
-                {% csrf_token %}
-                
-                <div class="mb-3">
-                    <label for="{{ form.username.id_for_label }}" class="form-label">
-                        <i class="bi bi-person"></i> Usuário
-                    </label>
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                    <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
-                    {% endif %}
+
+            <div class="hud-panel-box">
+                <div class="hud-panel-title">Monitoramento</div>
+                <div class="hud-data-line">
+                    <span>CPU</span>
+                    <span class="hud-data-value">23%</span>
                 </div>
-                
-                <div class="mb-4">
-                    <label for="{{ form.password.id_for_label }}" class="form-label">
-                        <i class="bi bi-lock"></i> Senha
-                    </label>
-                    {{ form.password }}
-                    {% if form.password.errors %}
-                    <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
-                    {% endif %}
+                <div class="hud-data-line">
+                    <span>Memória</span>
+                    <span class="hud-data-value">1.2 GB</span>
                 </div>
-                
-                <button type="submit" class="btn btn-login">
-                    <i class="bi bi-box-arrow-in-right"></i> Entrar
-                </button>
-            </form>
+                <div class="hud-data-line">
+                    <span>Latência</span>
+                    <span class="hud-data-value">12ms</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sistema central -->
+        <div class="hud-core-system">
+            <div class="hud-circle-outer"></div>
+            <div class="hud-circle-mid1"></div>
+            <div class="hud-circle-mid2"></div>
+            <div class="hud-circle-inner"></div>
             
-            <div class="text-center mt-4">
-                <small class="text-muted">
-                    © 2026 ContratuS - Todos os direitos reservados
-                </small>
+            <div class="hud-core">
+                <div class="hud-core-logo">CS</div>
+            </div>
+
+            <!-- Linhas radiais -->
+            <div class="hud-line"></div>
+            <div class="hud-line"></div>
+            <div class="hud-line"></div>
+            <div class="hud-line"></div>
+            <div class="hud-line"></div>
+            <div class="hud-line"></div>
+            <div class="hud-line"></div>
+            <div class="hud-line"></div>
+        </div>
+
+        <!-- Painel direito -->
+        <div class="hud-panel-right">
+            <div class="hud-panel-box">
+                <div class="hud-panel-title">Módulos Carregados</div>
+                <div class="hud-data-line">
+                    <span>Autenticação</span>
+                    <span class="hud-data-value">✓</span>
+                </div>
+                <div class="hud-data-line">
+                    <span>Contratos</span>
+                    <span class="hud-data-value">✓</span>
+                </div>
+                <div class="hud-data-line">
+                    <span>Clientes</span>
+                    <span class="hud-data-value">✓</span>
+                </div>
+                <div class="hud-data-line">
+                    <span>Propostas</span>
+                    <span class="hud-data-value">✓</span>
+                </div>
+            </div>
+
+            <div class="hud-panel-box">
+                <div class="hud-panel-title">Informações</div>
+                <div class="hud-data-line">
+                    <span>Versão</span>
+                    <span class="hud-data-value">2.0.1</span>
+                </div>
+                <div class="hud-data-line">
+                    <span>Build</span>
+                    <span class="hud-data-value">20260103</span>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Mensagens de boot -->
+    <div class="hud-boot-messages">
+        <div class="boot-msg">
+            <span>Inicializando sistema ContratuS</span>
+            <span class="boot-status">OK</span>
+        </div>
+        <div class="boot-msg">
+            <span>Carregando módulos de segurança</span>
+            <span class="boot-status">OK</span>
+        </div>
+        <div class="boot-msg">
+            <span>Verificando integridade do banco de dados</span>
+            <span class="boot-status">OK</span>
+        </div>
+        <div class="boot-msg">
+            <span>Ativando interface de contratos</span>
+            <span class="boot-status">OK</span>
+        </div>
+        <div class="boot-msg">
+            <span>Configurando protocolos de autenticação</span>
+            <span class="boot-status">OK</span>
+        </div>
+        <div class="boot-msg">
+            <span>Sistema pronto para uso</span>
+            <span class="boot-status">READY</span>
+        </div>
+    </div>
 </div>
+
+<!-- ======================== TELA DE LOGIN ======================== -->
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-system-icon">
+                <div class="icon-hexagon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+            </div>
+            <h2 class="login-title">CONTRATUS</h2>
+            <p class="login-subtitle">Sistema de Gestão de Contratos</p>
+        </div>
+
+        <div class="login-body">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" id="loginForm">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">
+                        <i class="bi bi-person-circle"></i> Identificação
+                    </label>
+                    <input 
+                        type="text" 
+                        name="{{ form.username.name }}" 
+                        id="{{ form.username.id_for_label }}"
+                        class="form-control" 
+                        placeholder="Digite seu usuário"
+                        required
+                        autocomplete="username"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">
+                        <i class="bi bi-lock-fill"></i> Código de Acesso
+                    </label>
+                    <input 
+                        type="password" 
+                        name="{{ form.password.name }}" 
+                        id="{{ form.password.id_for_label }}"
+                        class="form-control" 
+                        placeholder="Digite sua senha"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="bi bi-unlock-fill"></i> Iniciar Acesso
+                </button>
+            </form>
+        </div>
+
+        <div class="login-footer">
+            CONTRATUS v2.0 © 2026 - SISTEMA PROTEGIDO
+        </div>
+    </div>
+</div>
+
+<!-- ======================== JAVASCRIPT ======================== -->
+<script>
+    window.addEventListener('DOMContentLoaded', function() {
+        const hudBoot = document.getElementById('hudBoot');
+        
+        // Após 4.5 segundos, faz fade out do HUD
+        setTimeout(function() {
+            hudBoot.classList.add('fade-out');
+            
+            setTimeout(function() {
+                hudBoot.style.display = 'none';
+            }, 1000);
+        }, 4500);
+
+        // Auto-focus no campo de usuário
+        setTimeout(function() {
+            const usernameField = document.querySelector('input[name="username"]');
+            if (usernameField) {
+                usernameField.focus();
+            }
+        }, 5500);
+    });
+</script>
+
 {% endblock %}
