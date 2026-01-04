@@ -50,5 +50,44 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
 
+     path('empreendimentos/<int:empreendimento_pk>/tipos/', 
+         views.tipo_unidade_list, 
+         name='tipo_unidade_list'),
+    
+    path('empreendimentos/<int:empreendimento_pk>/tipos/novo/', 
+         views.tipo_unidade_create, 
+         name='tipo_unidade_create'),
+    
+    path('tipos-unidade/<int:pk>/editar/', 
+         views.tipo_unidade_edit, 
+         name='tipo_unidade_edit'),
+    
+    path('tipos-unidade/<int:pk>/excluir/', 
+         views.tipo_unidade_delete, 
+         name='tipo_unidade_delete'),
+    
+    # =====================================================
+    # UNIDADES
+    # =====================================================
+    path('empreendimentos/<int:empreendimento_pk>/unidades/nova/', 
+         views.unidade_create, 
+         name='unidade_create'),
+    
+    path('unidades/<int:pk>/editar/', 
+         views.unidade_edit, 
+         name='unidade_edit'),
+    
+    path('empreendimentos/<int:empreendimento_pk>/unidades/lote/', 
+         views.unidades_em_lote_create, 
+         name='unidades_em_lote_create'),
+    
+    # =====================================================
+    # API AJAX
+    # =====================================================
+    path('api/empreendimentos/<int:empreendimento_pk>/tipos/', 
+         views.api_tipos_unidade, 
+         name='api_tipos_unidade'),
+
+
 
 ]

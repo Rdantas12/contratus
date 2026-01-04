@@ -1,0 +1,128 @@
+{% extends 'contratus/base.html' %}
+
+{% block title %}{{ title }} - Sistema de Contratos{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-house-door"></i> {{ title }}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Empreendimento:</strong> {{ empreendimento.nome }}
+                    </div>
+                    
+                    <h5 class="mb-3">Informações da Unidade</h5>
+                    
+                    <!-- Tipo de Unidade -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Tipo de Unidade</label>
+                            {{ form.tipo_unidade }}
+                            <small class="text-muted d-block">
+                                Opcional - Deixe em branco para usar valores padrão do empreendimento
+                            </small>
+                            <div id="tipo-info" class="mt-2" style="display:none;">
+                                <div class="alert alert-success">
+                                    <strong>Informações do Tipo:</strong>
+                                    <div id="tipo-detalhes"></div>
+                                </div>
+                            </div>
+                            {% if form.tipo_unidade.errors %}
+                            <div class="text-danger">{{ form.tipo_unidade.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Identificação -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Identificação *</label>
+                            {{ form.identificacao }}
+                            {% if form.identificacao.errors %}
+                            <div class="text-danger">{{ form.identificacao.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status *</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                            <div class="text-danger">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Andar e Bloco -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Andar</label>
+                            {{ form.andar }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bloco</label>
+                            {{ form.bloco }}
+                        </div>
+                    </div>
+                    
+                    <!-- Observações -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Observações</label>
+                            {{ form.observacoes }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'empreendimento_detail' empreendimento.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-save"></i> Salvar Unidade
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Mostrar informações do tipo selecionado
+document.getElementById('id_tipo_unidade').addEventListener('change', function() {
+    const tipoId = this.value;
+    const tipoInfo = document.getElementById('tipo-info');
+    const tipoDetalhes = document.getElementById('tipo-detalhes');
+    
+    if (tipoId) {
+        // Fazer requisição AJAX para obter info do tipo
+        fetch(`/api/empreendimentos/{{ empreendimento.pk }}/tipos/`)
+            .then(response => response.json())
+            .then(data => {
+                const tipo = data.find(t => t.id == tipoId);
+                if (tipo) {
+                    tipoDetalhes.innerHTML = `
+                        <div><strong>Nome:</strong> ${tipo.nome}</div>
+                        <div><strong>Características:</strong> ${tipo.descricao}</div>
+                        <div><strong>Valor:</strong> R$ ${parseFloat(tipo.valor_imovel).toFixed(2)}</div>
+                    `;
+                    tipoInfo.style.display = 'block';
+                }
+            });
+    } else {
+        tipoInfo.style.display = 'none';
+    }
+});
+
+// Trigger inicial se já houver tipo selecionado
+if (document.getElementById('id_tipo_unidade').value) {
+    document.getElementById('id_tipo_unidade').dispatchEvent(new Event('change'));
+}
+</script>
+{% endblock %}

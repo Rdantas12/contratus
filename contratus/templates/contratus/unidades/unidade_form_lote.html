@@ -1,0 +1,203 @@
+{% extends 'contratus/base.html' %}
+
+{% block title %}{{ title }} - Sistema de Contratos{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-lightning"></i> {{ title }}
+            </div>
+            <div class="card-body">
+                <form method="post" id="form-lote">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Empreendimento:</strong> {{ empreendimento.nome }}<br>
+                        <small>Esta ferramenta permite criar várias unidades de uma só vez.</small>
+                    </div>
+                    
+                    <h5 class="mb-3">Configurações</h5>
+                    
+                    <!-- Tipo de Unidade -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Tipo de Unidade</label>
+                            {{ form.tipo_unidade }}
+                            <small class="text-muted d-block">
+                                Opcional - Todas as unidades criadas terão este tipo
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3">Numeração</h5>
+                    
+                    <!-- Prefixo -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Prefixo</label>
+                            {{ form.prefixo }}
+                            <small class="text-muted d-block">
+                                Ex: "Casa", "Apto", "Bloco A - Apto"
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- Números -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Número Inicial *</label>
+                            {{ form.numero_inicial }}
+                            {% if form.numero_inicial.errors %}
+                            <div class="text-danger">{{ form.numero_inicial.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Número Final *</label>
+                            {{ form.numero_final }}
+                            {% if form.numero_final.errors %}
+                            <div class="text-danger">{{ form.numero_final.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Preview -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="alert alert-secondary" id="preview">
+                                <strong>Preview:</strong>
+                                <div id="preview-content">Digite os números para ver o preview...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3">Informações Adicionais</h5>
+                    
+                    <!-- Andar e Bloco -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Andar</label>
+                            {{ form.andar }}
+                            <small class="text-muted d-block">
+                                Opcional - Será aplicado a todas as unidades
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bloco</label>
+                            {{ form.bloco }}
+                            <small class="text-muted d-block">
+                                Opcional - Será aplicado a todas as unidades
+                            </small>
+                        </div>
+                    </div>
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'empreendimento_detail' empreendimento.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-lightning"></i> Criar Unidades
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="bi bi-lightbulb"></i> Exemplos</h6>
+                <ul class="mb-0 small">
+                    <li><strong>Prefixo:</strong> "Casa" | <strong>De:</strong> 1 | <strong>Até:</strong> 10 → Casa 01, Casa 02, ..., Casa 10</li>
+                    <li><strong>Prefixo:</strong> "Apto" | <strong>De:</strong> 101 | <strong>Até:</strong> 110 → Apto 101, Apto 102, ..., Apto 110</li>
+                    <li><strong>Prefixo:</strong> vazio | <strong>De:</strong> 1 | <strong>Até:</strong> 5 → 01, 02, 03, 04, 05</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Preview das unidades que serão criadas
+function atualizarPreview() {
+    const prefixo = document.querySelector('input[name="prefixo"]').value;
+    const inicial = parseInt(document.querySelector('input[name="numero_inicial"]').value) || 0;
+    const final = parseInt(document.querySelector('input[name="numero_final"]').value) || 0;
+    
+    const previewContent = document.getElementById('preview-content');
+    
+    if (inicial > 0 && final > 0 && final >= inicial) {
+        const quantidade = final - inicial + 1;
+        
+        if (quantidade > 100) {
+            previewContent.innerHTML = '<span class="text-danger">❌ Máximo de 100 unidades por vez</span>';
+            return;
+        }
+        
+        let preview = `<strong>${quantidade} unidade(s) serão criadas:</strong><br><br>`;
+        
+        // Mostrar primeiras 5
+        const max = Math.min(5, quantidade);
+        for (let i = 0; i < max; i++) {
+            const numero = inicial + i;
+            const id = prefixo ? `${prefixo} ${numero.toString().padStart(2, '0')}` : numero.toString().padStart(2, '0');
+            preview += `<span class="badge bg-primary me-1 mb-1">${id}</span>`;
+        }
+        
+        if (quantidade > 5) {
+            preview += '<span class="badge bg-secondary me-1 mb-1">...</span>';
+            
+            // Mostrar última
+            const ultimoNumero = final;
+            const ultimoId = prefixo ? `${prefixo} ${ultimoNumero.toString().padStart(2, '0')}` : ultimoNumero.toString().padStart(2, '0');
+            preview += `<span class="badge bg-primary me-1 mb-1">${ultimoId}</span>`;
+        }
+        
+        previewContent.innerHTML = preview;
+    } else {
+        previewContent.innerHTML = 'Digite os números para ver o preview...';
+    }
+}
+
+// Eventos
+document.querySelector('input[name="prefixo"]').addEventListener('input', atualizarPreview);
+document.querySelector('input[name="numero_inicial"]').addEventListener('input', atualizarPreview);
+document.querySelector('input[name="numero_final"]').addEventListener('input', atualizarPreview);
+
+// Preview inicial
+atualizarPreview();
+
+// Carregar tipos de unidade quando empreendimento mudar
+const empSelect = document.getElementById('id_empreendimento');
+const tipoSelect = document.getElementById('id_tipo_unidade');
+
+if (empSelect) {
+    empSelect.addEventListener('change', function() {
+        const empId = this.value;
+        if (empId) {
+            fetch(`/api/empreendimentos/${empId}/tipos/`)
+                .then(response => response.json())
+                .then(data => {
+                    tipoSelect.innerHTML = '<option value="">---------</option>';
+                    data.forEach(tipo => {
+                        const option = document.createElement('option');
+                        option.value = tipo.id;
+                        option.textContent = tipo.nome;
+                        tipoSelect.appendChild(option);
+                    });
+                });
+        }
+    });
+}
+</script>
+{% endblock %}

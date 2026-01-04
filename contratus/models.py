@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.utils import timezone
 from decimal import Decimal
 
+
 class User(AbstractUser):
     NIVEL_CHOICES = (
         ('administrador', 'Administrador'),
@@ -20,7 +21,7 @@ class User(AbstractUser):
     cpf = models.CharField(
         max_length=14,
         unique=True,
-        verbose_name='CPF'
+
     )
 
     creci = models.CharField(
@@ -437,6 +438,116 @@ class Empreendimento(models.Model):
         self.unidades_disponiveis = self.total_unidades - vendidas
         self.save()
 
+
+class TipoUnidade(models.Model):
+    """
+    Representa diferentes tipos de unidades dentro de um empreendimento
+    Ex: "2 quartos - 60m²", "3 quartos + suíte - 80m²"
+    """
+    empreendimento = models.ForeignKey(
+        Empreendimento,
+        on_delete=models.CASCADE,
+        related_name='tipos_unidade',
+        verbose_name='Empreendimento'
+    )
+    
+    nome = models.CharField(
+        max_length=200,
+        verbose_name='Nome do Tipo',
+        help_text='Ex: 2 Quartos, 3 Quartos + Suíte'
+    )
+    
+    descricao = models.TextField(
+        blank=True,
+        verbose_name='Descrição',
+        help_text='Descrição detalhada deste tipo de unidade'
+    )
+    
+    # Características específicas
+    quartos = models.IntegerField(
+        default=0,
+        verbose_name='Quartos'
+    )
+    
+    banheiros = models.IntegerField(
+        default=0,
+        verbose_name='Banheiros'
+    )
+    
+    vagas_garagem = models.IntegerField(
+        default=0,
+        verbose_name='Vagas de Garagem'
+    )
+    
+    area_util = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name='Área Útil (m²)'
+    )
+    
+    # Valores específicos para este tipo
+    valor_imovel = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name='Valor do Imóvel'
+    )
+    
+    valor_engenharia_necessaria = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        default=Decimal('0.00'),
+        verbose_name='Valor da Engenharia Necessária'
+    )
+    
+    # Imagem (opcional)
+    imagem = models.ImageField(
+        upload_to='tipos_unidade/',
+        blank=True,
+        null=True,
+        verbose_name='Imagem/Planta'
+    )
+    
+    # Controle
+    ativo = models.BooleanField(
+        default=True,
+        verbose_name='Ativo'
+    )
+    
+    data_cadastro = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Data de Cadastro'
+    )
+    
+    class Meta:
+        verbose_name = 'Tipo de Unidade'
+        verbose_name_plural = 'Tipos de Unidade'
+        ordering = ['nome']
+        unique_together = ['empreendimento', 'nome']
+    
+    def __str__(self):
+        return f"{self.empreendimento.nome} - {self.nome}"
+    
+    def get_descricao_completa(self):
+        """Retorna descrição formatada"""
+        partes = []
+        if self.quartos:
+            partes.append(f"{self.quartos} quarto(s)")
+        if self.banheiros:
+            partes.append(f"{self.banheiros} banheiro(s)")
+        if self.vagas_garagem:
+            partes.append(f"{self.vagas_garagem} vaga(s)")
+        if self.area_util:
+            partes.append(f"{self.area_util}m²")
+        
+        return " | ".join(partes) if partes else "Sem características definidas"
+
+
+
+
 class UnidadeEmpreendimento(models.Model):
     STATUS_CHOICES = (
         ('disponivel', 'Disponível'),
@@ -450,6 +561,17 @@ class UnidadeEmpreendimento(models.Model):
         on_delete=models.CASCADE,
         related_name='unidades',
         verbose_name='Empreendimento'
+    )
+    
+    # ✅ NOVO: Tipo de unidade (opcional)
+    tipo_unidade = models.ForeignKey(
+        TipoUnidade,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='unidades',
+        verbose_name='Tipo de Unidade',
+        help_text='Selecione o tipo se esta unidade tiver características específicas'
     )
     
     identificacao = models.CharField(
@@ -489,7 +611,45 @@ class UnidadeEmpreendimento(models.Model):
         unique_together = ['empreendimento', 'identificacao']
     
     def __str__(self):
-        return f"{self.empreendimento.nome} - {self.identificacao}"
+        tipo_info = f" ({self.tipo_unidade.nome})" if self.tipo_unidade else ""
+        return f"{self.empreendimento.nome} - {self.identificacao}{tipo_info}"
+    
+    # ✅ NOVOS MÉTODOS: Retornar valores considerando o tipo
+    def get_valor_imovel(self):
+        """Retorna o valor do imóvel (do tipo ou do empreendimento)"""
+        if self.tipo_unidade:
+            return self.tipo_unidade.valor_imovel
+        return self.empreendimento.valor_imovel
+    
+    def get_valor_engenharia(self):
+        """Retorna o valor da engenharia (do tipo ou do empreendimento)"""
+        if self.tipo_unidade:
+            return self.tipo_unidade.valor_engenharia_necessaria or Decimal('0.00')
+        return self.empreendimento.valor_engenharia_necessaria or Decimal('0.00')
+    
+    def get_quartos(self):
+        """Retorna quantidade de quartos"""
+        if self.tipo_unidade:
+            return self.tipo_unidade.quartos
+        return self.empreendimento.quartos
+    
+    def get_banheiros(self):
+        """Retorna quantidade de banheiros"""
+        if self.tipo_unidade:
+            return self.tipo_unidade.banheiros
+        return self.empreendimento.banheiros
+    
+    def get_area_util(self):
+        """Retorna área útil"""
+        if self.tipo_unidade:
+            return self.tipo_unidade.area_util
+        return self.empreendimento.area_util
+    
+    def get_descricao_completa(self):
+        """Retorna descrição completa da unidade"""
+        if self.tipo_unidade:
+            return f"{self.tipo_unidade.nome} - {self.tipo_unidade.get_descricao_completa()}"
+        return self.empreendimento.descricao_completa
     
 class Cliente(models.Model):
     ORIGEM_CHOICES = (
@@ -617,7 +777,11 @@ class Cliente(models.Model):
     def get_endereco_completo(self):
         complemento = f" {self.complemento}" if self.complemento else ""
         return f"{self.rua}, n° {self.numero}{complemento}. {self.bairro} - {self.cidade}/{self.estado}"
-    
+
+
+
+
+
 
 class Proposta(models.Model):
     STATUS_CHOICES = (

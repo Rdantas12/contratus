@@ -6,7 +6,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import (
     User, Equipe, Construtora, Empreendimento, UnidadeEmpreendimento,
-    Cliente, Proposta, Contrato
+    Cliente, Proposta, Contrato, TipoUnidade
 )
 
 
@@ -133,18 +133,71 @@ class EmpreendimentoForm(forms.ModelForm):
 
 
 class UnidadeForm(forms.ModelForm):
-    """Formulário de unidade"""
+    """Formulário de unidade - VERSÃO ATUALIZADA"""
     class Meta:
         model = UnidadeEmpreendimento
-        fields = ['empreendimento', 'identificacao', 'andar', 'bloco', 'status', 'observacoes']
+        fields = [
+            'empreendimento', 'tipo_unidade', 'identificacao',
+            'andar', 'bloco', 'status', 'observacoes'
+        ]
         widgets = {
-            'empreendimento': forms.Select(attrs={'class': 'form-control'}),
-            'identificacao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Casa 03, Apto 205'}),
+            'empreendimento': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'id_empreendimento_unidade'
+            }),
+            'tipo_unidade': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'id_tipo_unidade'
+            }),
+            'identificacao': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex: Casa 03, Apto 205'
+            }),
             'andar': forms.TextInput(attrs={'class': 'form-control'}),
             'bloco': forms.TextInput(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
+        labels = {
+            'empreendimento': 'Empreendimento *',
+            'tipo_unidade': 'Tipo de Unidade',
+            'identificacao': 'Identificação *',
+            'andar': 'Andar',
+            'bloco': 'Bloco',
+            'status': 'Status *',
+            'observacoes': 'Observações',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        empreendimento_id = kwargs.pop('empreendimento_id', None)
+        super().__init__(*args, **kwargs)
+        
+        # Tipo de unidade é opcional
+        self.fields['tipo_unidade'].required = False
+        
+        # Se foi passado empreendimento, filtrar tipos
+        if empreendimento_id:
+            self.fields['empreendimento'].initial = empreendimento_id
+            self.fields['tipo_unidade'].queryset = TipoUnidade.objects.filter(
+                empreendimento_id=empreendimento_id,
+                ativo=True
+            )
+        elif self.instance and self.instance.pk:
+            # Se está editando, filtrar pelos tipos do empreendimento da instância
+            self.fields['tipo_unidade'].queryset = TipoUnidade.objects.filter(
+                empreendimento=self.instance.empreendimento,
+                ativo=True
+            )
+        else:
+            # Caso contrário, nenhum tipo disponível até selecionar empreendimento
+            self.fields['tipo_unidade'].queryset = TipoUnidade.objects.none()
+        
+        # Help texts
+        self.fields['tipo_unidade'].help_text = (
+            'Deixe em branco para usar valores padrão do empreendimento. '
+            'Selecione um tipo para usar valores específicos.'
+        )
+
 
 
 class ClienteForm(forms.ModelForm):
@@ -356,3 +409,167 @@ class ContratoForm(forms.ModelForm):
         self.fields['testemunha2_nome'].required = False
         self.fields['testemunha2_cpf'].required = False
         self.fields['observacoes'].required = False
+
+
+class TipoUnidadeForm(forms.ModelForm):
+    """Formulário para criar tipos de unidade"""
+    class Meta:
+        model = TipoUnidade
+        fields = [
+            'empreendimento', 'nome', 'descricao',
+            'quartos', 'banheiros', 'vagas_garagem', 'area_util',
+            'valor_imovel', 'valor_engenharia_necessaria',
+            'imagem', 'ativo'
+        ]
+        widgets = {
+            'empreendimento': forms.Select(attrs={'class': 'form-control'}),
+            'nome': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex: 2 Quartos, 3 Quartos + Suíte'
+            }),
+            'descricao': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Descrição detalhada deste tipo'
+            }),
+            'quartos': forms.NumberInput(attrs={'class': 'form-control'}),
+            'banheiros': forms.NumberInput(attrs={'class': 'form-control'}),
+            'vagas_garagem': forms.NumberInput(attrs={'class': 'form-control'}),
+            'area_util': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'valor_imovel': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': '0.00'
+            }),
+            'valor_engenharia_necessaria': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Opcional'
+            }),
+            'imagem': forms.FileInput(attrs={'class': 'form-control'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'empreendimento': 'Empreendimento *',
+            'nome': 'Nome do Tipo *',
+            'descricao': 'Descrição',
+            'quartos': 'Quartos',
+            'banheiros': 'Banheiros',
+            'vagas_garagem': 'Vagas de Garagem',
+            'area_util': 'Área Útil (m²)',
+            'valor_imovel': 'Valor do Imóvel *',
+            'valor_engenharia_necessaria': 'Engenharia Necessária',
+            'imagem': 'Imagem/Planta',
+            'ativo': 'Tipo Ativo',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        empreendimento_id = kwargs.pop('empreendimento_id', None)
+        super().__init__(*args, **kwargs)
+        
+        # Se foi passado um empreendimento, filtrar e pré-selecionar
+        if empreendimento_id:
+            self.fields['empreendimento'].initial = empreendimento_id
+            self.fields['empreendimento'].widget = forms.HiddenInput()
+        
+        # Tornar opcional
+        self.fields['valor_engenharia_necessaria'].required = False
+        self.fields['descricao'].required = False
+
+
+
+class UnidadesEmLoteForm(forms.Form):
+    """Formulário para criar múltiplas unidades de uma vez"""
+    
+    empreendimento = forms.ModelChoiceField(
+        queryset=Empreendimento.objects.filter(ativo=True),
+        label='Empreendimento *',
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'id_empreendimento_lote'
+        })
+    )
+    
+    tipo_unidade = forms.ModelChoiceField(
+        queryset=TipoUnidade.objects.none(),
+        required=False,
+        label='Tipo de Unidade',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        help_text='Opcional - todas as unidades terão este tipo'
+    )
+    
+    prefixo = forms.CharField(
+        max_length=20,
+        required=False,
+        label='Prefixo',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ex: Casa, Apto, Bloco A - Apto'
+        }),
+        help_text='Opcional - será adicionado antes dos números'
+    )
+    
+    numero_inicial = forms.IntegerField(
+        min_value=1,
+        label='Número Inicial *',
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '1'
+        })
+    )
+    
+    numero_final = forms.IntegerField(
+        min_value=1,
+        label='Número Final *',
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '10'
+        })
+    )
+    
+    andar = forms.CharField(
+        max_length=20,
+        required=False,
+        label='Andar',
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    
+    bloco = forms.CharField(
+        max_length=20,
+        required=False,
+        label='Bloco',
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Atualizar queryset de tipos quando empreendimento for selecionado
+        if 'empreendimento' in self.data:
+            try:
+                empreendimento_id = int(self.data.get('empreendimento'))
+                self.fields['tipo_unidade'].queryset = TipoUnidade.objects.filter(
+                    empreendimento_id=empreendimento_id,
+                    ativo=True
+                )
+            except (ValueError, TypeError):
+                pass
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        numero_inicial = cleaned_data.get('numero_inicial')
+        numero_final = cleaned_data.get('numero_final')
+        
+        if numero_inicial and numero_final:
+            if numero_final < numero_inicial:
+                raise forms.ValidationError(
+                    'O número final deve ser maior ou igual ao número inicial.'
+                )
+            
+            quantidade = numero_final - numero_inicial + 1
+            if quantidade > 100:
+                raise forms.ValidationError(
+                    'Não é possível criar mais de 100 unidades de uma vez.'
+                )
+        
+        return cleaned_data

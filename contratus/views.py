@@ -15,11 +15,11 @@ from num2words import num2words
 
 from .models import (
     User, Equipe, Construtora, Empreendimento, UnidadeEmpreendimento,
-    Cliente, Proposta, Contrato, HistoricoContrato, Comissao, Configuracao
+    Cliente, Proposta, Contrato, HistoricoContrato, Comissao, Configuracao, TipoUnidade
 )
 from .forms import (
     LoginForm, ConstrutoraForm, EmpreendimentoForm, UnidadeForm,
-    ClienteForm, PropostaForm, ContratoForm, UserForm, EquipeForm
+    ClienteForm, PropostaForm, ContratoForm, UserForm, EquipeForm, TipoUnidadeForm, UnidadesEmLoteForm
 )
 
 
@@ -977,7 +977,7 @@ def contrato_alterar_status(request, pk):
 
 @login_required
 def api_empreendimento_info(request, pk):
-    """API para retornar informações do empreendimento"""
+    """API para retornar informações do empreendimento - VERSÃO ATUALIZADA"""
     empreendimento = get_object_or_404(Empreendimento, pk=pk)
     
     data = {
@@ -985,24 +985,60 @@ def api_empreendimento_info(request, pk):
         'endereco': empreendimento.get_endereco_completo(),
         'descricao': empreendimento.descricao_completa,
         'valor_imovel': str(empreendimento.valor_imovel),
-        'valor_engenharia_necessaria': str(empreendimento.valor_engenharia_necessaria),
+        'valor_engenharia_necessaria': str(empreendimento.valor_engenharia_necessaria or 0),
         'construtora': {
             'razao_social': empreendimento.construtora.razao_social,
             'cnpj': empreendimento.construtora.cnpj,
             'endereco': empreendimento.construtora.get_endereco_completo()
         },
+        'tipos_unidade': [
+            {
+                'id': t.id,
+                'nome': t.nome,
+                'valor_imovel': str(t.valor_imovel),
+            }
+            for t in empreendimento.tipos_unidade.filter(ativo=True)
+        ],
         'unidades': [
             {
                 'id': u.id,
                 'identificacao': u.identificacao,
                 'status': u.status,
-                'status_display': u.get_status_display()
+                'status_display': u.get_status_display(),
+                'tipo_unidade_id': u.tipo_unidade.id if u.tipo_unidade else None,
+                'tipo_unidade_nome': u.tipo_unidade.nome if u.tipo_unidade else None,
+                'valor_imovel': str(u.get_valor_imovel()),
             }
             for u in empreendimento.unidades.filter(status='disponivel')
         ]
     }
     
     return JsonResponse(data)
+
+@login_required
+def api_tipos_unidade(request, empreendimento_pk):
+    """API para retornar tipos de unidade de um empreendimento (AJAX)"""
+    tipos = TipoUnidade.objects.filter(
+        empreendimento_id=empreendimento_pk,
+        ativo=True
+    )
+    
+    data = [
+        {
+            'id': tipo.id,
+            'nome': tipo.nome,
+            'descricao': tipo.get_descricao_completa(),
+            'valor_imovel': str(tipo.valor_imovel),
+            'valor_engenharia': str(tipo.valor_engenharia_necessaria or 0),
+            'quartos': tipo.quartos,
+            'banheiros': tipo.banheiros,
+            'area_util': str(tipo.area_util) if tipo.area_util else None,
+        }
+        for tipo in tipos
+    ]
+    
+    return JsonResponse(data, safe=False)
+
 
 
 @login_required
@@ -1020,3 +1056,219 @@ def api_cliente_info(request, pk):
     }
     
     return JsonResponse(data)
+
+
+@login_required
+def tipo_unidade_list(request, empreendimento_pk):
+    """Lista de tipos de unidade de um empreendimento"""
+    empreendimento = get_object_or_404(Empreendimento, pk=empreendimento_pk)
+    tipos = empreendimento.tipos_unidade.all()
+    
+    # Verificar permissão de edição
+    pode_editar = request.user.nivel == 'administrador'
+    
+    return render(request, 'contratus/tipos_unidade/list.html', {
+        'empreendimento': empreendimento,
+        'tipos': tipos,
+        'pode_editar': pode_editar
+    })
+
+
+@login_required
+def tipo_unidade_create(request, empreendimento_pk):
+    """Criar tipo de unidade - apenas administrador"""
+    if request.user.nivel != 'administrador':
+        messages.error(request, 'Acesso negado. Apenas administradores podem criar tipos de unidade.')
+        return redirect('empreendimento_detail', pk=empreendimento_pk)
+    
+    empreendimento = get_object_or_404(Empreendimento, pk=empreendimento_pk)
+    
+    if request.method == 'POST':
+        form = TipoUnidadeForm(request.POST, request.FILES, empreendimento_id=empreendimento_pk)
+        if form.is_valid():
+            tipo = form.save()
+            messages.success(request, f'Tipo "{tipo.nome}" criado com sucesso!')
+            return redirect('tipo_unidade_list', empreendimento_pk=empreendimento_pk)
+    else:
+        form = TipoUnidadeForm(empreendimento_id=empreendimento_pk)
+    
+    return render(request, 'contratus/tipos_unidade/form.html', {
+        'form': form,
+        'title': f'Novo Tipo de Unidade - {empreendimento.nome}',
+        'empreendimento': empreendimento
+    })
+
+
+@login_required
+def tipo_unidade_edit(request, pk):
+    """Editar tipo de unidade - apenas administrador"""
+    if request.user.nivel != 'administrador':
+        messages.error(request, 'Acesso negado.')
+        return redirect('empreendimento_list')
+    
+    tipo = get_object_or_404(TipoUnidade, pk=pk)
+    
+    if request.method == 'POST':
+        form = TipoUnidadeForm(request.POST, request.FILES, instance=tipo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tipo atualizado com sucesso!')
+            return redirect('tipo_unidade_list', empreendimento_pk=tipo.empreendimento.pk)
+    else:
+        form = TipoUnidadeForm(instance=tipo)
+    
+    return render(request, 'contratus/tipos_unidade/form.html', {
+        'form': form,
+        'title': f'Editar Tipo: {tipo.nome}',
+        'empreendimento': tipo.empreendimento
+    })
+
+
+@login_required
+def tipo_unidade_delete(request, pk):
+    """Excluir tipo de unidade - apenas administrador"""
+    if request.user.nivel != 'administrador':
+        messages.error(request, 'Acesso negado.')
+        return redirect('empreendimento_list')
+    
+    tipo = get_object_or_404(TipoUnidade, pk=pk)
+    empreendimento_pk = tipo.empreendimento.pk
+    
+    # Verificar se há unidades usando este tipo
+    if tipo.unidades.exists():
+        messages.error(
+            request,
+            f'Não é possível excluir este tipo pois há {tipo.unidades.count()} unidade(s) associada(s).'
+        )
+    else:
+        nome = tipo.nome
+        tipo.delete()
+        messages.success(request, f'Tipo "{nome}" excluído com sucesso!')
+    
+    return redirect('tipo_unidade_list', empreendimento_pk=empreendimento_pk)
+
+
+
+@login_required
+def unidade_create(request, empreendimento_pk):
+    """Criar unidade - apenas administrador"""
+    if request.user.nivel != 'administrador':
+        messages.error(request, 'Acesso negado. Apenas administradores podem criar unidades.')
+        return redirect('empreendimento_detail', pk=empreendimento_pk)
+    
+    empreendimento = get_object_or_404(Empreendimento, pk=empreendimento_pk)
+    
+    if request.method == 'POST':
+        form = UnidadeForm(request.POST, empreendimento_id=empreendimento_pk)
+        if form.is_valid():
+            unidade = form.save()
+            messages.success(request, f'Unidade "{unidade.identificacao}" criada com sucesso!')
+            return redirect('empreendimento_detail', pk=empreendimento_pk)
+    else:
+        form = UnidadeForm(empreendimento_id=empreendimento_pk)
+    
+    return render(request, 'contratus/unidades/form.html', {
+        'form': form,
+        'title': f'Nova Unidade - {empreendimento.nome}',
+        'empreendimento': empreendimento
+    })
+
+
+@login_required
+def unidade_edit(request, pk):
+    """Editar unidade - apenas administrador"""
+    if request.user.nivel != 'administrador':
+        messages.error(request, 'Acesso negado.')
+        return redirect('empreendimento_list')
+    
+    unidade = get_object_or_404(UnidadeEmpreendimento, pk=pk)
+    
+    if request.method == 'POST':
+        form = UnidadeForm(request.POST, instance=unidade)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Unidade atualizada com sucesso!')
+            return redirect('empreendimento_detail', pk=unidade.empreendimento.pk)
+    else:
+        form = UnidadeForm(instance=unidade)
+    
+    return render(request, 'contratus/unidades/form.html', {
+        'form': form,
+        'title': f'Editar Unidade: {unidade.identificacao}',
+        'empreendimento': unidade.empreendimento
+    })
+
+
+@login_required
+def unidades_em_lote_create(request, empreendimento_pk):
+    """Criar múltiplas unidades de uma vez - apenas administrador"""
+    if request.user.nivel != 'administrador':
+        messages.error(request, 'Acesso negado.')
+        return redirect('empreendimento_detail', pk=empreendimento_pk)
+    
+    empreendimento = get_object_or_404(Empreendimento, pk=empreendimento_pk)
+    
+    if request.method == 'POST':
+        form = UnidadesEmLoteForm(request.POST)
+        if form.is_valid():
+            prefixo = form.cleaned_data.get('prefixo', '')
+            numero_inicial = form.cleaned_data['numero_inicial']
+            numero_final = form.cleaned_data['numero_final']
+            tipo_unidade = form.cleaned_data.get('tipo_unidade')
+            andar = form.cleaned_data.get('andar', '')
+            bloco = form.cleaned_data.get('bloco', '')
+            
+            # Criar unidades
+            unidades_criadas = []
+            unidades_duplicadas = []
+            
+            for numero in range(numero_inicial, numero_final + 1):
+                if prefixo:
+                    identificacao = f"{prefixo} {numero:02d}"
+                else:
+                    identificacao = f"{numero:02d}"
+                
+                # Verificar se já existe
+                if UnidadeEmpreendimento.objects.filter(
+                    empreendimento=empreendimento,
+                    identificacao=identificacao
+                ).exists():
+                    unidades_duplicadas.append(identificacao)
+                    continue
+                
+                # Criar unidade
+                UnidadeEmpreendimento.objects.create(
+                    empreendimento=empreendimento,
+                    tipo_unidade=tipo_unidade,
+                    identificacao=identificacao,
+                    andar=andar,
+                    bloco=bloco,
+                    status='disponivel'
+                )
+                unidades_criadas.append(identificacao)
+            
+            # Mensagens
+            if unidades_criadas:
+                messages.success(
+                    request,
+                    f'✅ {len(unidades_criadas)} unidade(s) criada(s) com sucesso!'
+                )
+            
+            if unidades_duplicadas:
+                messages.warning(
+                    request,
+                    f'⚠️ {len(unidades_duplicadas)} unidade(s) não criada(s) por já existirem: '
+                    f'{", ".join(unidades_duplicadas[:5])}'
+                    f'{"..." if len(unidades_duplicadas) > 5 else ""}'
+                )
+            
+            return redirect('empreendimento_detail', pk=empreendimento_pk)
+    else:
+        form = UnidadesEmLoteForm(initial={'empreendimento': empreendimento})
+    
+    return render(request, 'contratus/unidades/form_lote.html', {
+        'form': form,
+        'title': f'Criar Unidades em Lote - {empreendimento.nome}',
+        'empreendimento': empreendimento
+    })
+

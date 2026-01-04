@@ -1,0 +1,128 @@
+{% extends 'contratus/base.html' %}
+
+{% block title %}{{ title }} - Sistema de Contratos{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-house-door"></i> {{ title }}
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Empreendimento:</strong> {{ empreendimento.nome }}
+                    </div>
+                    
+                    <h5 class="mb-3">Dados Básicos</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Nome do Tipo *</label>
+                            {{ form.nome }}
+                            <small class="text-muted">Ex: 2 Quartos, 3 Quartos + Suíte, Studio</small>
+                            {% if form.nome.errors %}
+                            <div class="text-danger">{{ form.nome.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Descrição</label>
+                            {{ form.descricao }}
+                            {% if form.descricao.errors %}
+                            <div class="text-danger">{{ form.descricao.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3">Características</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Quartos</label>
+                            {{ form.quartos }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Banheiros</label>
+                            {{ form.banheiros }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Vagas</label>
+                            {{ form.vagas_garagem }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Área (m²)</label>
+                            {{ form.area_util }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3">Valores</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Valor do Imóvel *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                {{ form.valor_imovel }}
+                            </div>
+                            {% if form.valor_imovel.errors %}
+                            <div class="text-danger">{{ form.valor_imovel.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Engenharia Necessária</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                {{ form.valor_engenharia_necessaria }}
+                            </div>
+                            <small class="text-muted">Opcional - deixe em branco se não aplicável</small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3">Imagem</h5>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Imagem/Planta</label>
+                            {{ form.imagem }}
+                            <small class="text-muted d-block">Opcional - imagem ilustrativa ou planta baixa</small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="form-check">
+                                {{ form.ativo }}
+                                <label class="form-check-label" for="{{ form.ativo.id_for_label }}">
+                                    Tipo Ativo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'tipo_unidade_list' empreendimento.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-save"></i> Salvar Tipo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

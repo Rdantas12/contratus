@@ -1,0 +1,256 @@
+{% extends 'contratus/base.html' %}
+
+{% block title %}{{ empreendimento.nome }} - Detalhes{% endblock %}
+{% block page_title %}Detalhes do Empreendimento{% endblock %}
+
+{% block content %}
+<!-- Card Principal do Empreendimento -->
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-buildings"></i> {{ empreendimento.nome }}</span>
+        <div>
+            {% if pode_editar %}
+            <a href="{% url 'empreendimento_edit' empreendimento.pk %}" class="btn btn-sm btn-primary">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            {% endif %}
+            <a href="{% url 'empreendimento_list' %}" class="btn btn-sm btn-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                {% if empreendimento.imagem_principal %}
+                <img src="{{ empreendimento.imagem_principal.url }}" 
+                     class="img-fluid rounded" 
+                     alt="{{ empreendimento.nome }}">
+                {% else %}
+                <div class="bg-light p-5 text-center rounded">
+                    <i class="bi bi-building" style="font-size: 4rem; color: #ccc;"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <h5>{{ empreendimento.nome }}</h5>
+                <p class="text-muted">{{ empreendimento.construtora.nome_fantasia }}</p>
+                
+                <p><strong>Endereço:</strong><br>{{ empreendimento.get_endereco_completo }}</p>
+                
+                <p><strong>Tipo:</strong> {{ empreendimento.get_tipo_imovel_display }}<br>
+                   <strong>Status:</strong> 
+                   <span class="badge bg-{{ empreendimento.status }}">
+                       {{ empreendimento.get_status_display }}
+                   </span>
+                </p>
+                
+                <p><strong>Descrição:</strong><br>{{ empreendimento.descricao_completa }}</p>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <strong>Quartos:</strong> {{ empreendimento.quartos }}
+            </div>
+            <div class="col-md-3">
+                <strong>Banheiros:</strong> {{ empreendimento.banheiros }}
+            </div>
+            <div class="col-md-3">
+                <strong>Vagas:</strong> {{ empreendimento.vagas_garagem }}
+            </div>
+            <div class="col-md-3">
+                <strong>Área:</strong> {{ empreendimento.area_util|default:"-" }} m²
+            </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <strong>Valor Padrão:</strong><br>
+                <span class="h5 text-success">R$ {{ empreendimento.valor_imovel|floatformat:2 }}</span>
+            </div>
+            <div class="col-md-4">
+                <strong>Total de Unidades:</strong><br>
+                <span class="h5">{{ empreendimento.total_unidades }}</span>
+            </div>
+            <div class="col-md-4">
+                <strong>Disponíveis:</strong><br>
+                <span class="h5 text-primary">{{ empreendimento.unidades_disponiveis }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs de Navegação -->
+<ul class="nav nav-tabs" id="empTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="unidades-tab" data-bs-toggle="tab" 
+                data-bs-target="#unidades" type="button" role="tab">
+            <i class="bi bi-house-door"></i> Unidades ({{ unidades.count }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tipos-tab" data-bs-toggle="tab" 
+                data-bs-target="#tipos" type="button" role="tab">
+            <i class="bi bi-grid-3x3"></i> Tipos de Unidade ({{ empreendimento.tipos_unidade.count }})
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="empTabContent">
+    <!-- Tab Unidades -->
+    <div class="tab-pane fade show active" id="unidades" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Lista de Unidades</span>
+                {% if pode_editar %}
+                <div>
+                    <a href="{% url 'unidades_em_lote_create' empreendimento.pk %}" 
+                       class="btn btn-sm btn-warning">
+                        <i class="bi bi-lightning"></i> Criar em Lote
+                    </a>
+                    <a href="{% url 'unidade_create' empreendimento.pk %}" 
+                       class="btn btn-sm btn-success">
+                        <i class="bi bi-plus"></i> Nova Unidade
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if unidades %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Identificação</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th>Andar/Bloco</th>
+                                <th>Status</th>
+                                {% if pode_editar %}<th>Ações</th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for unidade in unidades %}
+                            <tr>
+                                <td><strong>{{ unidade.identificacao }}</strong></td>
+                                <td>
+                                    {% if unidade.tipo_unidade %}
+                                    <span class="badge bg-info">{{ unidade.tipo_unidade.nome }}</span>
+                                    {% else %}
+                                    <span class="text-muted">Padrão</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>R$ {{ unidade.get_valor_imovel|floatformat:2 }}</strong>
+                                </td>
+                                <td>
+                                    {% if unidade.andar %}Andar: {{ unidade.andar }}{% endif %}
+                                    {% if unidade.bloco %}<br>Bloco: {{ unidade.bloco }}{% endif %}
+                                    {% if not unidade.andar and not unidade.bloco %}-{% endif %}
+                                </td>
+                                <td>
+                                    {% if unidade.status == 'disponivel' %}
+                                    <span class="badge bg-success">{{ unidade.get_status_display }}</span>
+                                    {% elif unidade.status == 'reservada' %}
+                                    <span class="badge bg-warning">{{ unidade.get_status_display }}</span>
+                                    {% elif unidade.status == 'vendida' %}
+                                    <span class="badge bg-danger">{{ unidade.get_status_display }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ unidade.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                {% if pode_editar %}
+                                <td>
+                                    <a href="{% url 'unidade_edit' unidade.pk %}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    Nenhuma unidade cadastrada ainda.
+                    {% if pode_editar %}
+                    <a href="{% url 'unidade_create' empreendimento.pk %}">Clique aqui para criar a primeira unidade.</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tab Tipos -->
+    <div class="tab-pane fade" id="tipos" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Tipos de Unidade</span>
+                {% if pode_editar %}
+                <a href="{% url 'tipo_unidade_create' empreendimento.pk %}" 
+                   class="btn btn-sm btn-success">
+                    <i class="bi bi-plus"></i> Novo Tipo
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if empreendimento.tipos_unidade.all %}
+                <div class="row">
+                    {% for tipo in empreendimento.tipos_unidade.all %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>{{ tipo.nome }}</h6>
+                                <p class="mb-2">
+                                    <i class="bi bi-door-closed"></i> {{ tipo.quartos }} quartos |
+                                    <i class="bi bi-droplet"></i> {{ tipo.banheiros }} banheiros |
+                                    <i class="bi bi-rulers"></i> {{ tipo.area_util|default:"-" }} m²
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Valor:</strong> 
+                                    <span class="text-success h5">R$ {{ tipo.valor_imovel|floatformat:2 }}</span>
+                                </p>
+                                <p class="mb-2 small text-muted">
+                                    {{ tipo.unidades.count }} unidade(s) deste tipo
+                                </p>
+                                {% if pode_editar %}
+                                <a href="{% url 'tipo_unidade_edit' tipo.pk %}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    Nenhum tipo de unidade cadastrado.
+                    {% if pode_editar %}
+                    <br><br>
+                    <strong>Dica:</strong> Tipos de unidade permitem ter preços e características 
+                    diferentes para unidades do mesmo empreendimento.
+                    <br><br>
+                    <a href="{% url 'tipo_unidade_create' empreendimento.pk %}" 
+                       class="btn btn-sm btn-success">
+                        <i class="bi bi-plus"></i> Criar Primeiro Tipo
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
