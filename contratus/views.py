@@ -521,14 +521,16 @@ def empreendimento_edit(request, pk):
 def empreendimento_detail(request, pk):
     """Detalhes do empreendimento com unidades - todos podem ver"""
     empreendimento = get_object_or_404(Empreendimento, pk=pk)
-    unidades = empreendimento.unidades.all()
+    
+    # ✅ CORREÇÃO: Buscar as unidades do empreendimento
+    unidades = empreendimento.unidades.select_related('tipo_unidade').all()
     
     # Verificar permissão de edição
     pode_editar = request.user.nivel == 'administrador'
     
-    return render(request, 'contratus/empreendimentos/detail.html', {
+    return render(request, 'contratus/empreendimentos/empreendimento_detail.html', {
         'empreendimento': empreendimento,
-        'unidades': unidades,
+        'unidades': unidades,  # ✅ ADICIONADO
         'pode_editar': pode_editar
     })
 
@@ -1067,11 +1069,13 @@ def tipo_unidade_list(request, empreendimento_pk):
     # Verificar permissão de edição
     pode_editar = request.user.nivel == 'administrador'
     
-    return render(request, 'contratus/tipos_unidade/list.html', {
+    return render(request, 'contratus/tipo_unidades/tipo_unidade_list.html', {  # ✅ CORRIGIDO
         'empreendimento': empreendimento,
         'tipos': tipos,
         'pode_editar': pode_editar
     })
+
+
 
 
 @login_required
@@ -1085,6 +1089,14 @@ def tipo_unidade_create(request, empreendimento_pk):
     
     if request.method == 'POST':
         form = TipoUnidadeForm(request.POST, request.FILES, empreendimento_id=empreendimento_pk)
+        
+        # ✅ DEBUG: Imprimir erros
+        if not form.is_valid():
+            print("❌ ERROS DO FORMULÁRIO:")
+            print(form.errors)
+            print("📦 DADOS RECEBIDOS:")
+            print(request.POST)
+        
         if form.is_valid():
             tipo = form.save()
             messages.success(request, f'Tipo "{tipo.nome}" criado com sucesso!')
@@ -1092,7 +1104,7 @@ def tipo_unidade_create(request, empreendimento_pk):
     else:
         form = TipoUnidadeForm(empreendimento_id=empreendimento_pk)
     
-    return render(request, 'contratus/tipos_unidade/form.html', {
+    return render(request, 'contratus/tipo_unidades/tipo_unidade_form.html', {  # ✅ CORRIGIDO
         'form': form,
         'title': f'Novo Tipo de Unidade - {empreendimento.nome}',
         'empreendimento': empreendimento
@@ -1117,12 +1129,11 @@ def tipo_unidade_edit(request, pk):
     else:
         form = TipoUnidadeForm(instance=tipo)
     
-    return render(request, 'contratus/tipos_unidade/form.html', {
+    return render(request, 'contratus/tipo_unidades/tipo_unidade_form.html', {  # ✅ CORRIGIDO
         'form': form,
         'title': f'Editar Tipo: {tipo.nome}',
         'empreendimento': tipo.empreendimento
     })
-
 
 @login_required
 def tipo_unidade_delete(request, pk):
@@ -1148,7 +1159,6 @@ def tipo_unidade_delete(request, pk):
     return redirect('tipo_unidade_list', empreendimento_pk=empreendimento_pk)
 
 
-
 @login_required
 def unidade_create(request, empreendimento_pk):
     """Criar unidade - apenas administrador"""
@@ -1161,18 +1171,22 @@ def unidade_create(request, empreendimento_pk):
     if request.method == 'POST':
         form = UnidadeForm(request.POST, empreendimento_id=empreendimento_pk)
         if form.is_valid():
-            unidade = form.save()
+            unidade = form.save(commit=False)  # ✅ NÃO salva ainda
+            unidade.empreendimento = empreendimento  # ✅ Define o empreendimento
+            unidade.save()  # ✅ Agora salva
             messages.success(request, f'Unidade "{unidade.identificacao}" criada com sucesso!')
             return redirect('empreendimento_detail', pk=empreendimento_pk)
+        else:
+            # ✅ ADICIONAR para debug
+            messages.error(request, f'Erro ao salvar: {form.errors}')
     else:
         form = UnidadeForm(empreendimento_id=empreendimento_pk)
     
-    return render(request, 'contratus/unidades/form.html', {
+    return render(request, 'contratus/unidades/unidade_form.html', {
         'form': form,
         'title': f'Nova Unidade - {empreendimento.nome}',
         'empreendimento': empreendimento
     })
-
 
 @login_required
 def unidade_edit(request, pk):
@@ -1187,12 +1201,12 @@ def unidade_edit(request, pk):
         form = UnidadeForm(request.POST, instance=unidade)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Unidade atualizada com sucesso!')
+            messages.success(request, f'Unidade "{unidade.identificacao}" atualizada com sucesso!')
             return redirect('empreendimento_detail', pk=unidade.empreendimento.pk)
     else:
         form = UnidadeForm(instance=unidade)
     
-    return render(request, 'contratus/unidades/form.html', {
+    return render(request, 'contratus/unidades/unidade_form.html', {  # ✅ CORRIGIDO
         'form': form,
         'title': f'Editar Unidade: {unidade.identificacao}',
         'empreendimento': unidade.empreendimento
@@ -1209,7 +1223,9 @@ def unidades_em_lote_create(request, empreendimento_pk):
     empreendimento = get_object_or_404(Empreendimento, pk=empreendimento_pk)
     
     if request.method == 'POST':
-        form = UnidadesEmLoteForm(request.POST)
+        # ✅ PASSAR empreendimento_id NO POST TAMBÉM
+        form = UnidadesEmLoteForm(request.POST, empreendimento_id=empreendimento_pk)
+        
         if form.is_valid():
             prefixo = form.cleaned_data.get('prefixo', '')
             numero_inicial = form.cleaned_data['numero_inicial']
@@ -1264,11 +1280,34 @@ def unidades_em_lote_create(request, empreendimento_pk):
             
             return redirect('empreendimento_detail', pk=empreendimento_pk)
     else:
-        form = UnidadesEmLoteForm(initial={'empreendimento': empreendimento})
+        # ✅ PASSAR empreendimento_id NO GET
+        form = UnidadesEmLoteForm(empreendimento_id=empreendimento_pk)
     
-    return render(request, 'contratus/unidades/form_lote.html', {
+    return render(request, 'contratus/unidades/unidade_form_lote.html', {
         'form': form,
         'title': f'Criar Unidades em Lote - {empreendimento.nome}',
         'empreendimento': empreendimento
     })
 
+@login_required
+def unidade_delete(request, pk):
+    """Excluir unidade - apenas administrador"""
+    if request.user.nivel != 'administrador':
+        messages.error(request, 'Acesso negado.')
+        return redirect('empreendimento_list')
+    
+    unidade = get_object_or_404(UnidadeEmpreendimento, pk=pk)
+    empreendimento_pk = unidade.empreendimento.pk
+    
+    # Verificar se a unidade já foi usada em propostas/contratos
+    if unidade.propostas.exists() or unidade.contratos.exists():
+        messages.error(
+            request,
+            'Não é possível excluir esta unidade pois já foi usada em propostas ou contratos.'
+        )
+    else:
+        identificacao = unidade.identificacao
+        unidade.delete()
+        messages.success(request, f'Unidade "{identificacao}" excluída com sucesso!')
+    
+    return redirect('empreendimento_detail', pk=empreendimento_pk)

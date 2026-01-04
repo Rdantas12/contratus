@@ -141,10 +141,7 @@ class UnidadeForm(forms.ModelForm):
             'andar', 'bloco', 'status', 'observacoes'
         ]
         widgets = {
-            'empreendimento': forms.Select(attrs={
-                'class': 'form-control',
-                'id': 'id_empreendimento_unidade'
-            }),
+            'empreendimento': forms.HiddenInput(),  # ✅ ALTERADO DE Select para HiddenInput
             'tipo_unidade': forms.Select(attrs={
                 'class': 'form-control',
                 'id': 'id_tipo_unidade'
@@ -169,14 +166,14 @@ class UnidadeForm(forms.ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
-        empreendimento_id = kwargs.pop('empreendimento_id', None)
+        empreendimento_id = kwargs.pop('empreendimento_id', None)  # ✅ Nome correto
         super().__init__(*args, **kwargs)
         
         # Tipo de unidade é opcional
         self.fields['tipo_unidade'].required = False
         
         # Se foi passado empreendimento, filtrar tipos
-        if empreendimento_id:
+        if empreendimento_id:  # ✅ Usa o nome correto
             self.fields['empreendimento'].initial = empreendimento_id
             self.fields['tipo_unidade'].queryset = TipoUnidade.objects.filter(
                 empreendimento_id=empreendimento_id,
@@ -410,7 +407,6 @@ class ContratoForm(forms.ModelForm):
         self.fields['testemunha2_cpf'].required = False
         self.fields['observacoes'].required = False
 
-
 class TipoUnidadeForm(forms.ModelForm):
     """Formulário para criar tipos de unidade"""
     class Meta:
@@ -422,7 +418,7 @@ class TipoUnidadeForm(forms.ModelForm):
             'imagem', 'ativo'
         ]
         widgets = {
-            'empreendimento': forms.Select(attrs={'class': 'form-control'}),
+            'empreendimento': forms.HiddenInput(),  # ✅ Já definir como hidden aqui
             'nome': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Ex: 2 Quartos, 3 Quartos + Suíte'
@@ -464,31 +460,39 @@ class TipoUnidadeForm(forms.ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
-        empreendimento_id = kwargs.pop('empreendimento_id', None)
+        # ✅ Armazenar empreendimento_id como atributo da instância
+        self.empreendimento_id = kwargs.pop('empreendimento_id', None)
         super().__init__(*args, **kwargs)
         
-        # Se foi passado um empreendimento, filtrar e pré-selecionar
-        if empreendimento_id:
-            self.fields['empreendimento'].initial = empreendimento_id
-            self.fields['empreendimento'].widget = forms.HiddenInput()
+        # Se foi passado um empreendimento, pré-selecionar
+        if self.empreendimento_id:
+            # ✅ Definir initial E queryset
+            self.fields['empreendimento'].initial = self.empreendimento_id
+            self.fields['empreendimento'].queryset = Empreendimento.objects.filter(pk=self.empreendimento_id)
+            # ✅ IMPORTANTE: Tornar o campo não-obrigatório aqui, vamos preencher no save()
+            self.fields['empreendimento'].required = False
         
         # Tornar opcional
         self.fields['valor_engenharia_necessaria'].required = False
         self.fields['descricao'].required = False
-
-
+    
+    # ✅ CORREÇÃO: Sobrescrever o método save para garantir o empreendimento
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # ✅ IMPORTANTE: Se empreendimento_id foi passado, forçar ele
+        if self.empreendimento_id and not instance.empreendimento_id:
+            instance.empreendimento = Empreendimento.objects.get(pk=self.empreendimento_id)
+        
+        if commit:
+            instance.save()
+        
+        return instance
 
 class UnidadesEmLoteForm(forms.Form):
     """Formulário para criar múltiplas unidades de uma vez"""
     
-    empreendimento = forms.ModelChoiceField(
-        queryset=Empreendimento.objects.filter(ativo=True),
-        label='Empreendimento *',
-        widget=forms.Select(attrs={
-            'class': 'form-control',
-            'id': 'id_empreendimento_lote'
-        })
-    )
+    # ✅ REMOVER O CAMPO empreendimento (não é mais necessário)
     
     tipo_unidade = forms.ModelChoiceField(
         queryset=TipoUnidade.objects.none(),
@@ -542,18 +546,16 @@ class UnidadesEmLoteForm(forms.Form):
     )
     
     def __init__(self, *args, **kwargs):
+        # ✅ RECEBER empreendimento_id COMO PARÂMETRO
+        empreendimento_id = kwargs.pop('empreendimento_id', None)
         super().__init__(*args, **kwargs)
         
-        # Atualizar queryset de tipos quando empreendimento for selecionado
-        if 'empreendimento' in self.data:
-            try:
-                empreendimento_id = int(self.data.get('empreendimento'))
-                self.fields['tipo_unidade'].queryset = TipoUnidade.objects.filter(
-                    empreendimento_id=empreendimento_id,
-                    ativo=True
-                )
-            except (ValueError, TypeError):
-                pass
+        # ✅ CARREGAR OS TIPOS DE UNIDADE DO EMPREENDIMENTO
+        if empreendimento_id:
+            self.fields['tipo_unidade'].queryset = TipoUnidade.objects.filter(
+                empreendimento_id=empreendimento_id,
+                ativo=True
+            )
     
     def clean(self):
         cleaned_data = super().clean()
