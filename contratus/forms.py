@@ -97,8 +97,7 @@ class EmpreendimentoForm(forms.ModelForm):
             'nome', 'construtora', 'tipo_imovel',
             'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cep',
             'descricao_completa', 'quartos', 'banheiros', 'vagas_garagem', 'area_util',
-            'total_unidades', 'unidades_disponiveis',
-            'valor_imovel', 'valor_engenharia_necessaria', 'taxa_corretagem_percentual',
+            'total_unidades', 'unidades_disponiveis', 'taxa_corretagem_percentual',
             'status', 'data_lancamento', 'data_entrega_prevista',
             'imagem_principal', 'ativo', 'observacoes'
         ]
@@ -120,8 +119,6 @@ class EmpreendimentoForm(forms.ModelForm):
             'area_util': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'total_unidades': forms.NumberInput(attrs={'class': 'form-control'}),
             'unidades_disponiveis': forms.NumberInput(attrs={'class': 'form-control'}),
-            'valor_imovel': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'valor_engenharia_necessaria': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'taxa_corretagem_percentual': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'data_lancamento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -251,7 +248,6 @@ class PropostaForm(forms.ModelForm):
             'empreendimento', 'unidade', 'cliente',
             'valor_engenharia_necessaria', 'valor_imovel', 'valor_financiamento',
             'valor_subsidio', 'valor_fgts', 'valor_sinal', 'valor_entrada',
-            'valor_parcelamento_sem_juros',
             'observacoes'
         ]
         widgets = {
@@ -269,12 +265,6 @@ class PropostaForm(forms.ModelForm):
             'valor_fgts': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'valor_sinal': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'valor_entrada': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'valor_parcelamento_sem_juros': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.01',
-                'id': 'id_valor_parcelamento',
-                'readonly': 'readonly'
-            }),
             'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
     

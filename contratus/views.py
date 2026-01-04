@@ -979,42 +979,48 @@ def contrato_alterar_status(request, pk):
 
 @login_required
 def api_empreendimento_info(request, pk):
-    """API para retornar informações do empreendimento - VERSÃO ATUALIZADA"""
+    """API para retornar informações do empreendimento"""
+
     empreendimento = get_object_or_404(Empreendimento, pk=pk)
-    
+
     data = {
+        'id': empreendimento.id,
         'nome': empreendimento.nome,
         'endereco': empreendimento.get_endereco_completo(),
         'descricao': empreendimento.descricao_completa,
-        'valor_imovel': str(empreendimento.valor_imovel),
-        'valor_engenharia_necessaria': str(empreendimento.valor_engenharia_necessaria or 0),
+
         'construtora': {
             'razao_social': empreendimento.construtora.razao_social,
             'cnpj': empreendimento.construtora.cnpj,
-            'endereco': empreendimento.construtora.get_endereco_completo()
+            'endereco': empreendimento.construtora.get_endereco_completo(),
         },
+
+        # Tipos de unidade (modelo correto para valor base)
         'tipos_unidade': [
             {
-                'id': t.id,
-                'nome': t.nome,
-                'valor_imovel': str(t.valor_imovel),
+                'id': tipo.id,
+                'nome': tipo.nome,
+                'valor_imovel': str(tipo.valor_imovel),
+                'valor_engenharia_necessaria': str(tipo.valor_engenharia_necessaria or 0),
             }
-            for t in empreendimento.tipos_unidade.filter(ativo=True)
+            for tipo in empreendimento.tipos_unidade.filter(ativo=True)
         ],
+
+        # Unidades disponíveis
         'unidades': [
             {
-                'id': u.id,
-                'identificacao': u.identificacao,
-                'status': u.status,
-                'status_display': u.get_status_display(),
-                'tipo_unidade_id': u.tipo_unidade.id if u.tipo_unidade else None,
-                'tipo_unidade_nome': u.tipo_unidade.nome if u.tipo_unidade else None,
-                'valor_imovel': str(u.get_valor_imovel()),
+                'id': unidade.id,
+                'identificacao': unidade.identificacao,
+                'status': unidade.status,
+                'status_display': unidade.get_status_display(),
+                'tipo_unidade_id': unidade.tipo_unidade.id if unidade.tipo_unidade else None,
+                'tipo_unidade_nome': unidade.tipo_unidade.nome if unidade.tipo_unidade else None,
+                'valor_imovel': str(unidade.get_valor_imovel()),
             }
-            for u in empreendimento.unidades.filter(status='disponivel')
+            for unidade in empreendimento.unidades.filter(status='disponivel')
         ]
     }
-    
+
     return JsonResponse(data)
 
 @login_required

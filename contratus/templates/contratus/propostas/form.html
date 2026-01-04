@@ -86,20 +86,18 @@
                     
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Valor sem Juros (para contrato) *</label>
+                            <label>Valor para Construtora (sem juros) *</label>
                             {{ form.valor_parcelamento_sem_juros }}
-                            <small class="text-muted d-block">Esse valor será usado no contrato</small>
+                            <small class="text-muted">Valor que será pago à construtora parcelado</small>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Número de Parcelas *</label>
                             {{ form.numero_parcelas }}
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Valor da Parcela (com 50% juros) *</label>
+                            <label>Valor que o Cliente Pode Pagar *</label>
                             {{ form.valor_parcela }}
-                            <small class="text-muted d-block" id="info-parcela">
-                                Será calculado automaticamente
-                            </small>
+                            <small class="text-muted">Informe o valor mensal que o cliente consegue pagar</small>
                         </div>
                     </div>
                     
