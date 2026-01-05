@@ -90,13 +90,13 @@ class ConstrutoraForm(forms.ModelForm):
 
 
 class EmpreendimentoForm(forms.ModelForm):
-    """Formulário de empreendimento"""
+    """Formulário de empreendimento - SEM características específicas"""
     class Meta:
         model = Empreendimento
         fields = [
             'nome', 'construtora', 'tipo_imovel',
             'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cep',
-            'descricao_completa', 'quartos', 'banheiros', 'vagas_garagem', 'area_util',
+            'descricao_completa',
             'total_unidades', 'unidades_disponiveis', 'taxa_corretagem_percentual',
             'status', 'data_lancamento', 'data_entrega_prevista',
             'imagem_principal', 'ativo', 'observacoes'
@@ -113,10 +113,6 @@ class EmpreendimentoForm(forms.ModelForm):
             'estado': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '2'}),
             'cep': forms.TextInput(attrs={'class': 'form-control'}),
             'descricao_completa': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'quartos': forms.NumberInput(attrs={'class': 'form-control'}),
-            'banheiros': forms.NumberInput(attrs={'class': 'form-control'}),
-            'vagas_garagem': forms.NumberInput(attrs={'class': 'form-control'}),
-            'area_util': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'total_unidades': forms.NumberInput(attrs={'class': 'form-control'}),
             'unidades_disponiveis': forms.NumberInput(attrs={'class': 'form-control'}),
             'taxa_corretagem_percentual': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),

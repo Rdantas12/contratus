@@ -79,37 +79,29 @@
                     </div>
                     
                     <hr>
-                    <h5 class="mb-3"><i class="bi bi-house-door"></i> Características</h5>
+                    <h5 class="mb-3"><i class="bi bi-file-text"></i> Descrição</h5>
                     
                     <div class="row">
                         <div class="col-12 mb-3">
-                            <label class="form-label">Descrição Completa *</label>
+                            <label class="form-label">Descrição Completa do Empreendimento *</label>
                             {{ form.descricao_completa }}
-                            <small class="text-muted">Ex: Casa linear com 01 quarto, sala, cozinha, banheiro e área de serviço</small>
+                            <small class="text-muted">
+                                Descreva as características gerais do empreendimento. 
+                                As características específicas de cada tipo de unidade serão cadastradas posteriormente.
+                            </small>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Quartos</label>
-                            {{ form.quartos }}
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Banheiros</label>
-                            {{ form.banheiros }}
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Vagas Garagem</label>
-                            {{ form.vagas_garagem }}
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Área Útil (m²)</label>
-                            {{ form.area_util }}
-                        </div>
-                    </div>
+                    <!-- ✅ REMOVIDO: Quartos, Banheiros, Vagas, Área -->
                     
                     <hr>
-                    <h5 class="mb-3"><i class="bi bi-building-check"></i> Unidades</h5>
+                    <h5 class="mb-3"><i class="bi bi-building-check"></i> Unidades e Valores</h5>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Atenção:</strong> Os valores e características específicas (quartos, banheiros, etc.) 
+                        devem ser cadastrados nos <strong>Tipos de Unidade</strong> após salvar o empreendimento.
+                    </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -121,7 +113,6 @@
                             {{ form.unidades_disponiveis }}
                         </div>
                     </div>
-                    
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">

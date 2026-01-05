@@ -182,7 +182,7 @@ class Construtora(models.Model):
         return f"{self.rua}, n° {self.numero}{complemento}, {self.bairro} - {self.cidade}/{self.estado}"
 
 
-# ✅ ALTERAÇÃO 1: EMPREENDIMENTO SEM VALORES
+# ✅ ALTERAÇÃO 1: EMPREENDIMENTO SEM VALORES E SEM CARACTERÍSTICAS ESPECÍFICAS
 class Empreendimento(models.Model):
     TIPO_IMOVEL_CHOICES = (
         ('casa', 'Casa'),
@@ -218,28 +218,18 @@ class Empreendimento(models.Model):
     estado = models.CharField(max_length=2, verbose_name='Estado (UF)')
     cep = models.CharField(max_length=10, verbose_name='CEP')
     
-    # Descrição
+    # Descrição GERAL do empreendimento
     descricao_completa = models.TextField(
         verbose_name='Descrição Completa',
-        help_text='Ex: Casa linear com 01 quarto, sala, cozinha, banheiro e área de serviço'
+        help_text='Descrição geral do empreendimento e suas características comuns'
     )
     
-    # Características PADRÃO (para quando não houver tipo específico)
-    quartos = models.IntegerField(default=0, verbose_name='Quartos (Padrão)')
-    banheiros = models.IntegerField(default=0, verbose_name='Banheiros (Padrão)')
-    vagas_garagem = models.IntegerField(default=0, verbose_name='Vagas de Garagem (Padrão)')
-    area_util = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True, 
-        verbose_name='Área Útil (m²) - Padrão'
-    )
+    # ❌ REMOVIDO: quartos, banheiros, vagas_garagem, area_util
+    # ✅ AGORA FICAM APENAS NO TipoUnidade
     
     # Unidades
     total_unidades = models.IntegerField(verbose_name='Total de Unidades')
     unidades_disponiveis = models.IntegerField(verbose_name='Unidades Disponíveis')
-    
-    # ❌ REMOVIDO: valor_imovel
-    # ❌ REMOVIDO: valor_engenharia_necessaria
-    # ✅ AGORA ESSES VALORES FICAM APENAS NOS TIPOS DE UNIDADE
     
     taxa_corretagem_percentual = models.DecimalField(
         max_digits=5, decimal_places=2, default=5.00, 
