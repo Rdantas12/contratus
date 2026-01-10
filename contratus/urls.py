@@ -27,11 +27,14 @@ urlpatterns = [
     path('clientes/<int:pk>/editar/', views.cliente_edit, name='cliente_edit'),
     
     # Propostas
-    path('propostas/', views.proposta_list, name='proposta_list'),
-    path('propostas/nova/', views.proposta_create, name='proposta_create'),
-    path('propostas/<int:pk>/', views.proposta_detail, name='proposta_detail'),
-    path('propostas/<int:pk>/pdf/', views.proposta_gerar_pdf, name='proposta_gerar_pdf'),
-    path('propostas/<int:pk>/aprovar/', views.proposta_aprovar, name='proposta_aprovar'),
+     path('propostas/', views.proposta_list, name='proposta_list'),
+     path('propostas/nova/', views.proposta_create, name='proposta_create'),
+     path('propostas/<int:pk>/', views.proposta_detail, name='proposta_detail'),
+     path('propostas/<int:pk>/editar/', views.proposta_edit, name='proposta_edit'),
+     path('propostas/<int:pk>/excluir/', views.proposta_delete, name='proposta_delete'),
+     path('propostas/<int:pk>/pdf/', views.proposta_gerar_pdf, name='proposta_gerar_pdf'),
+     path('propostas/<int:pk>/aprovar/', views.proposta_aprovar, name='proposta_aprovar'),
+     path('propostas/<int:pk>/reprovar/', views.proposta_reprovar, name='proposta_reprovar'),
     
     # Contratos
     path('contratos/', views.contrato_list, name='contrato_list'),
@@ -43,12 +46,12 @@ urlpatterns = [
     # API AJAX
     path('api/empreendimento/<int:pk>/', views.api_empreendimento_info, name='api_empreendimento_info'),
     path('api/cliente/<int:pk>/', views.api_cliente_info, name='api_cliente_info'),
-
+    path('api/tipos-unidade/<int:tipo_id>/', views.get_tipo_unidade_data, name='api_tipo_unidade_data'),
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-
+     path('ajax/unidades-disponiveis/', views.ajax_unidades_disponiveis, name='ajax_unidades_disponiveis'),
 
      path('empreendimentos/<int:empreendimento_pk>/tipos/', 
          views.tipo_unidade_list, 

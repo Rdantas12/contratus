@@ -3,12 +3,11 @@
 {% block title %}Login - Sistema de Contratos{% endblock %}
 
 {% block login_content %}
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-    /* ================= FONTE CONTHRAX ================= */
     
-
     * {
         margin: 0;
         padding: 0;
@@ -18,8 +17,169 @@
     body, html {
         height: 100%;
         font-family: 'Inter', sans-serif;
-        background: #121212;
+        background: #0f1419;
         color: #fff;
+        overflow: hidden;
+    }
+
+    /* ================= ANIMAÇÃO DE ENTRADA ================= */
+    .intro-animation {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        z-index: 9999;
+        animation: fadeOutIntro 0.8s ease-in-out 2.5s forwards;
+    }
+
+    /* Logo animada */
+    .intro-logo-container {
+        position: relative;
+        width: 500px;
+        height: 500px;
+        opacity: 0;
+        transform: scale(0.3) rotate(-15deg);
+        animation: logoEntry 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards;
+    }
+
+    .intro-logo {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 0 40px rgba(0, 240, 168, 0.7))
+                drop-shadow(0 0 80px rgba(0, 240, 168, 0.5))
+                drop-shadow(0 0 120px rgba(0, 240, 168, 0.3));
+        animation: logoPulse 2s ease-in-out infinite;
+    }
+
+    /* Animação de pulso na logo */
+    @keyframes logoPulse {
+        0%, 100% {
+            filter: drop-shadow(0 0 40px rgba(0, 240, 168, 0.7))
+                    drop-shadow(0 0 80px rgba(0, 240, 168, 0.5));
+        }
+        50% {
+            filter: drop-shadow(0 0 60px rgba(0, 240, 168, 0.9))
+                    drop-shadow(0 0 100px rgba(0, 240, 168, 0.7))
+                    drop-shadow(0 0 140px rgba(0, 240, 168, 0.5));
+        }
+    }
+
+    /* Círculos de conexão animados */
+    .circuit-ring {
+        position: absolute;
+        inset: -20px;
+        border: 2px solid rgba(0, 240, 168, 0.3);
+        border-radius: 50%;
+        animation: ringPulse 3s ease-in-out infinite;
+    }
+
+    .circuit-ring:nth-child(2) {
+        inset: -40px;
+        animation-delay: 0.3s;
+        opacity: 0.6;
+    }
+
+    .circuit-ring:nth-child(3) {
+        inset: -60px;
+        animation-delay: 0.6s;
+        opacity: 0.3;
+    }
+
+    @keyframes ringPulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+    }
+
+    /* Pontos de conexão animados */
+    .connection-dots {
+        position: absolute;
+        inset: 0;
+    }
+
+    .dot {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #00f0a8;
+        border-radius: 50%;
+        box-shadow: 0 0 15px rgba(0, 240, 168, 0.8);
+        animation: dotBlink 1.5s ease-in-out infinite;
+    }
+
+    .dot:nth-child(1) { top: 10%; right: 20%; animation-delay: 0s; }
+    .dot:nth-child(2) { top: 30%; right: 5%; animation-delay: 0.3s; }
+    .dot:nth-child(3) { bottom: 30%; right: 5%; animation-delay: 0.6s; }
+    .dot:nth-child(4) { bottom: 10%; right: 20%; animation-delay: 0.9s; }
+
+    @keyframes dotBlink {
+        0%, 100% {
+            opacity: 0.3;
+            transform: scale(0.8);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+    }
+
+    /* Texto CONTRATUS */
+    .intro-text {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #00f0a8;
+        text-transform: uppercase;
+        letter-spacing: 12px;
+        text-shadow: 
+            0 0 30px rgba(0, 240, 168, 0.6),
+            0 0 60px rgba(0, 240, 168, 0.4);
+        opacity: 0;
+        animation: textFadeIn 1s ease-out 0.8s forwards;
+    }
+
+    @keyframes textFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes logoEntry {
+        0% {
+            opacity: 0;
+            transform: scale(0.3) rotate(-15deg);
+            filter: blur(10px);
+        }
+        60% {
+            opacity: 1;
+            transform: scale(1.15) rotate(3deg);
+            filter: blur(0px);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+            filter: blur(0px);
+        }
+    }
+
+    @keyframes fadeOutIntro {
+        to {
+            opacity: 0;
+            visibility: hidden;
+        }
     }
 
     /* ================= BACKGROUND ================= */
@@ -27,174 +187,469 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
+        min-height: 100vh;
+        background: #141b22;
         position: relative;
+        padding: 20px;
+        opacity: 0;
+        animation: fadeInContent 0.8s ease-in-out 2.8s forwards;
     }
 
-    
+    @keyframes fadeInContent {
+        to {
+            opacity: 1;
+        }
+    }
+
     .login-wrapper::before {
         content: '';
         position: absolute;
         inset: 0;
-        background: url('https://plus.unsplash.com/premium_photo-1764705638704-1ffba903b479?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center/cover;
-        filter: brightness(0.5); /* imagem levemente escura */
-        z-index: 0;
+        background: 
+            radial-gradient(circle at 30% 40%, rgba(0, 240, 168, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 70% 60%, rgba(0, 240, 168, 0.02) 0%, transparent 50%);
+        pointer-events: none;
     }
 
-    /* ================= CARD DE LOGIN ================= */
-    .login-card {
+    /* ================= CONTAINER ================= */
+    .login-container {
+        width: 100%;
+        max-width: 420px;
+        opacity: 0;
+        transform: translateY(40px);
+        animation: slideUp 0.7s ease-out 3s forwards;
+    }
+
+    @keyframes slideUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ================= LOGO NO FORMULÁRIO ================= */
+    .form-logo {
+        text-align: center;
+        margin-bottom: 5px;
+    }
+
+    .form-logo-img {
+        width: 400px;
+        height: 400px;
+        filter: drop-shadow(0 0 20px rgba(0, 240, 168, 0.5));
+        transition: all 0.3s ease;
+        animation: logoFloat 3s ease-in-out infinite;
+    }
+
+    .form-logo-img:hover {
+        filter: drop-shadow(0 0 30px rgba(0, 240, 168, 0.8));
+        transform: scale(1.05);
+    }
+
+    @keyframes logoFloat {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    /* ================= FORMULÁRIO ================= */
+    .login-form {
+        position: relative;
+    }
+
+    /* ================= CAMPOS COM DIAGONAL CRUZADA ================= */
+    .input-container {
+        position: relative;
+        margin-bottom: 0;
+    }
+
+    .username-wrapper {
+        position: relative;
+        z-index: 2;
+        margin-bottom: 15px;
+    }
+
+    .username-field {
+        width: 100%;
+        padding: 22px 20px 22px 60px;
+        background: #1d2731;
+        border: 1px solid #2a3845;
+        color: #fff;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        outline: none;
+        transition: all 0.3s ease;
+        clip-path: polygon(
+            0 0, 
+            100% 0, 
+            100% calc(100% - 50px), 
+            calc(100% - 50px) 100%, 
+            0 100%
+        );
+    }
+
+    .username-field::placeholder {
+        color: #5a6b7d;
+        font-weight: 300;
+    }
+
+    .username-field:focus {
+        background: #232d3a;
+        border-color: #00f0a8;
+        box-shadow: 0 0 0 1px rgba(0, 240, 168, 0.3);
+    }
+
+    .password-wrapper {
         position: relative;
         z-index: 1;
-        background: #1f1f1f;
-        padding: 25px 20px;        /* mais compacto, estilo chip */
-        border-radius: 16px;
-        max-width: 300px;
-        width: 85%;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-        text-align: center;
-        font-family: 'Conthrax', sans-serif;
+        margin-top: 0;
     }
 
-    .login-card h2 {
-        font-size: 28px;
-        margin-bottom: 6px;
-        font-weight: 600;
-        letter-spacing: 1px;
-    }
-
-    .login-card p {
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        color: rgba(255,255,255,0.6);
-        margin-bottom: 25px;
-    }
-
-    /* ================= FORM ================= */
-    .form-group {
-        margin-bottom: 18px;
-        text-align: left;
-    }
-
-    .form-label {
-        display: block;
-        font-size: 12px;
-        font-weight: 500;
-        color: rgba(255,255,255,0.7);
-        margin-bottom: 6px;
-    }
-
-    .form-control {
+    .password-field {
         width: 100%;
-        padding: 12px 14px;
-        border-radius: 6px;
-        border: 1px solid #333;
-        background: #2a2a2a;
+        padding: 22px 20px 22px 60px;
+        background: #1d2731;
+        border: 1px solid #2a3845;
         color: #fff;
-        font-size: 15px;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        outline: none;
+        transition: all 0.3s ease;
+        clip-path: polygon(
+            50px 0, 
+            100% 0, 
+            100% 100%, 
+            0 100%, 
+            0 50px
+        );
+    }
+
+    .password-field::placeholder {
+        color: #5a6b7d;
+        font-weight: 300;
+    }
+
+    .password-field:focus {
+        background: #232d3a;
+        border-color: #00f0a8;
+        box-shadow: 0 0 0 1px rgba(0, 240, 168, 0.3);
+    }
+
+    /* ================= ÍCONES ================= */
+    .input-icon {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.3rem;
+        z-index: 3;
+        pointer-events: none;
         transition: all 0.3s ease;
     }
 
-    .form-control:focus {
-        outline: none;
-        border-color: #007bff;
-        background: #333;
-        box-shadow: 0 0 8px rgba(0,123,255,0.3);
+    .username-wrapper .input-icon {
+    color: #fff;            /* branco */
+    left: 22px;             /* à esquerda do campo */
+    right: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Material Symbols Outlined';
+    font-variation-settings:
+        'FILL' 0,           /* 0 = contorno, 1 = preenchido */
+        'wght' 400,         /* peso */
+        'GRAD' 0,
+        'opsz' 24;          /* tamanho do ícone */
+    font-size: 1.3rem;
+    pointer-events: none;
+}
+
+    .password-wrapper .input-icon {
+    color: #fff;            /* branco */
+    right: 22px;            /* à direita */
+    left: auto;             /* remove o left */
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Material Symbols Outlined';
+    font-variation-settings:
+        'FILL' 0,     /* 0 = contorno, 1 = preenchido */
+        'wght' 400,   /* peso */
+        'GRAD' 0,
+        'opsz' 24;    /* tamanho do ícone */
+    font-size: 1.3rem;      /* tamanho geral */
+    pointer-events: none;
+}
+
+
+.password-wrapper .input-icon:hover {
+    color: #00f0a8; /* muda de cor se o usuário passar o mouse */
+}
+    .username-field:focus ~ .input-icon,
+    .password-field:focus ~ .input-icon {
+        color: #00f0a8;
+        transform: translateY(-50%) scale(1.1);
     }
 
-    .btn-login {
-        width: 100%;
-        padding: 12px;
-        border: none;
-        border-radius: 6px;
-        background: #007bff;
+    /* ================= OPÇÕES DO FORMULÁRIO ================= */
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        margin-bottom: 30px;
+        font-size: 0.875rem;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #aab4c9;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .remember-me:hover {
         color: #fff;
-        font-size: 16px;
-        font-weight: 600;
+    }
+
+    .remember-me input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #00f0a8;
+        border-radius: 2px;
+    }
+
+    .forgot-password {
+        color: #aab4c9;
+        text-decoration: none;
+        font-style: italic;
+        transition: color 0.3s ease;
+        font-size: 0.875rem;
+    }
+
+    .forgot-password:hover {
+        color: #00f0a8;
+    }
+
+    /* ================= BOTÃO LOGIN ================= */
+    .login-button {
+        width: 100%;
+        padding: 20px;
+        background: #00f0a8;
+        color: #0f1419;
+        border: none;
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 3px;
         cursor: pointer;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 240, 168, 0.3);
     }
 
-    .btn-login:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+    .login-button:hover {
+        background: #00ffb8;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 30px rgba(0, 240, 168, 0.5);
     }
 
-    /* ================= ALERT ================= */
-    .alert {
-        padding: 12px 16px;
-        border-radius: 6px;
-        margin-bottom: 18px;
-        font-size: 14px;
+    .login-button:active {
+        transform: translateY(0);
     }
 
-    .alert-danger {
-        background: rgba(220, 53, 69, 0.15);
-        color: #ff6b6b;
-        border-left: 3px solid #dc3545;
+    /* ================= MENSAGENS DE ERRO ================= */
+    .error-message {
+        background: rgba(255, 82, 82, 0.1);
+        border-left: 3px solid #ff5252;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        color: #ff8a8a;
+        font-size: 0.9rem;
     }
 
-    /* ================= FOOTER ================= */
-    .login-footer {
-        font-size: 12px;
-        color: rgba(255,255,255,0.5);
-        margin-top: 18px;
+    /* ================= RESPONSIVIDADE ================= */
+    @media (max-width: 768px) {
+        .intro-logo-container {
+            width: 140px;
+            height: 140px;
+        }
+
+        .intro-text {
+            font-size: 2rem;
+            letter-spacing: 6px;
+        }
+
+        .form-logo-img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .login-container {
+            max-width: 100%;
+            padding: 0 15px;
+        }
+
+        .username-field,
+        .password-field {
+            padding: 18px 15px 18px 50px;
+            font-size: 0.95rem;
+        }
+
+        .input-icon {
+            left: 18px;
+            font-size: 1.1rem;
+        }
+
+        .form-options {
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .login-button {
+            padding: 18px;
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
     }
 
-    @media(max-width: 480px) {
-        .login-card {
-            padding: 35px 18px;
+    @media (max-width: 480px) {
+        .username-field {
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% calc(100% - 35px), 
+                calc(100% - 35px) 100%, 
+                0 100%
+            );
+        }
+
+        .password-field {
+            clip-path: polygon(
+                35px 0, 
+                100% 0, 
+                100% 100%, 
+                0 100%, 
+                0 35px
+            );
         }
     }
 </style>
 
-<div class="login-wrapper">
-    <div class="login-card">
-        <h2>ConstratuS</h2>
-        <p>Sistema de Gestão de Contratos</p>
-
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
+<!-- Animação de Entrada -->
+<div class="intro-animation">
+    <div class="intro-logo-container">
+        <!-- Círculos de conexão -->
+        <div class="circuit-ring"></div>
+        <div class="circuit-ring"></div>
+        <div class="circuit-ring"></div>
+        
+        <!-- Pontos de conexão -->
+        <div class="connection-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
-        {% endfor %}
+        
+        <!-- Logo -->
+        <img src="{% static 'contratus/img/logo_minimalista_verde-removebg-preview.png' %}" alt="Contratus Logo" class="intro-logo">
+    </div>
+    
+</div>
+
+<!-- Tela de Login -->
+<div class="login-wrapper">
+    <div class="login-container">
+        
+        <!-- Logo no formulário -->
+        <div class="form-logo">
+            <img src="{% static 'contratus/img/logo_minimalista_verde-removebg-preview.png' %}" alt="Contratus Logo" class="form-logo-img">
+        </div>
+        
+        <!-- Mensagens de Erro -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
         {% endif %}
 
-        <form method="post" id="loginForm">
+        <!-- Formulário -->
+        <form method="POST" action="{% url 'login' %}" class="login-form">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="{{ form.username.id_for_label }}" class="form-label">Usuário</label>
+            
+            <!-- Campo Username -->
+            <div class="input-container username-wrapper">
                 <input 
                     type="text" 
-                    name="{{ form.username.name }}" 
-                    id="{{ form.username.id_for_label }}"
-                    class="form-control" 
-                    placeholder="Digite seu usuário"
+                    name="username" 
+                    class="username-field" 
+                    placeholder="Username"
                     required
                     autocomplete="username"
                 >
+                <span class="input-icon material-symbols-outlined">person</span>
             </div>
 
-            <div class="form-group">
-                <label for="{{ form.password.id_for_label }}" class="form-label">Senha</label>
+            <!-- Campo Password -->
+            <div class="input-container password-wrapper">
                 <input 
                     type="password" 
-                    name="{{ form.password.name }}" 
-                    id="{{ form.password.id_for_label }}"
-                    class="form-control" 
-                    placeholder="Digite sua senha"
+                    name="password" 
+                    class="password-field" 
+                    placeholder="Password"
                     required
                     autocomplete="current-password"
                 >
+                <span class="input-icon material-symbols-outlined">lock</span>
             </div>
 
-            <button type="submit" class="btn-login">Entrar</button>
-        </form>
+            <!-- Opções -->
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" name="remember_me" checked>
+                    <span>Remember me</span>
+                </label>
+                <a href="#" class="forgot-password">Forgot Password?</a>
+            </div>
 
-        <div class="login-footer">
-            ContratuS v1.0 ©2026
-        </div>
+            <!-- Botão Login -->
+            <button type="submit" class="login-button">
+                LOGIN
+            </button>
+        </form>
     </div>
 </div>
+
+<script>
+    // Remove a animação após o tempo definido
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            const intro = document.querySelector('.intro-animation');
+            if (intro) {
+                intro.style.pointerEvents = 'none';
+            }
+        }, 3500);
+    });
+
+    // Efeito suave de foco
+    const inputFields = document.querySelectorAll('.username-field, .password-field');
+    inputFields.forEach(field => {
+        field.addEventListener('focus', function() {
+            this.parentElement.style.transition = 'transform 0.3s ease';
+            this.parentElement.style.transform = 'translateX(3px)';
+        });
+        
+        field.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'translateX(0)';
+        });
+    });
+</script>
+
 {% endblock %}

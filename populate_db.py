@@ -1,586 +1,457 @@
-# populate_db.py
+"""
+Script para popular o banco de dados do sistema Contratus
+Cria: 1 administrador, 4 gerentes, 12 corretores (3 por equipe)
+Além de dados de construtoras, empreendimentos e unidades para testes
+"""
+
 import os
 import django
-from datetime import datetime, timedelta
+import random
 from decimal import Decimal
+from datetime import date, timedelta
 
 # Configurar Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')  # MUDE AQUI
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 django.setup()
 
 from django.contrib.auth import get_user_model
 from contratus.models import (
-    Equipe, Construtora, Empreendimento, UnidadeEmpreendimento,
-    Cliente, Proposta, Configuracao
+    User, Equipe, Construtora, Empreendimento, UnidadeEmpreendimento,
+    Cliente, TipoUnidade
 )
 
 User = get_user_model()
 
+
 def limpar_dados():
-    """Limpa dados de teste anteriores"""
-    print("🧹 Limpando dados anteriores...")
-    Proposta.objects.all().delete()
-    Cliente.objects.all().delete()
-    UnidadeEmpreendimento.objects.all().delete()
-    Empreendimento.objects.all().delete()
-    Construtora.objects.all().delete()
-    User.objects.filter(nivel__in=['gerente', 'corretor']).delete()
+    """Limpa dados existentes (CUIDADO!)"""
+    print("⚠️  Limpando dados existentes...")
+    User.objects.all().delete()
     Equipe.objects.all().delete()
-    print("✅ Dados limpos com sucesso!\n")
+    Construtora.objects.all().delete()
+    Empreendimento.objects.all().delete()
+    UnidadeEmpreendimento.objects.all().delete()
+    Cliente.objects.all().delete()
+    TipoUnidade.objects.all().delete()
+    print("✅ Dados limpos!")
 
-def criar_equipes():
-    """Cria equipes"""
-    print("👥 Criando equipes...")
-    
-    equipe1 = Equipe.objects.create(
-        nome="Equipe Centro",
-        descricao="Equipe responsável pela região central",
-        ativa=True
-    )
-    
-    equipe2 = Equipe.objects.create(
-        nome="Equipe Zona Sul",
-        descricao="Equipe responsável pela zona sul",
-        ativa=True
-    )
-    
-    print(f"✅ Criadas {Equipe.objects.count()} equipes\n")
-    return equipe1, equipe2
 
-def criar_usuarios(equipe1, equipe2):
-    """Cria usuários de teste"""
-    print("👤 Criando usuários...")
+def criar_administrador():
+    """Cria 1 administrador"""
+    print("\n📌 Criando Administrador...")
     
-    # Administrador
-    admin = User.objects.create_superuser(
+    admin = User.objects.create_user(
         username='admin',
         password='admin123',
-        email='admin@clickgr2.com',
+        email='admin@contratus.com',
         first_name='Administrador',
         last_name='Sistema',
-        cpf='111.111.111-11',
-        telefone='(21) 99999-9999',
+        cpf='000.000.000-00',
+        telefone='(11) 99999-0000',
         nivel='administrador',
-        ativo=True
+        is_staff=True,
+        is_superuser=True
     )
-    print(f"   ✓ Admin: {admin.username} / admin123")
     
-    # Gerente 1
-    gerente1 = User.objects.create_user(
-        username='gerente1',
-        password='gerente123',
-        email='gerente1@clickgr2.com',
-        first_name='Carlos',
-        last_name='Silva',
-        cpf='222.222.222-22',
-        creci='CRECI 54321',
-        telefone='(21) 98888-8888',
-        nivel='gerente',
-        equipe=equipe1,
-        ativo=True
-    )
-    equipe1.gerente = gerente1
-    equipe1.save()
-    print(f"   ✓ Gerente: {gerente1.username} / gerente123")
-    
-    # Gerente 2
-    gerente2 = User.objects.create_user(
-        username='gerente2',
-        password='gerente123',
-        email='gerente2@clickgr2.com',
-        first_name='Mariana',
-        last_name='Oliveira',
-        cpf='333.333.333-33',
-        creci='CRECI 54322',
-        telefone='(21) 98777-7777',
-        nivel='gerente',
-        equipe=equipe2,
-        ativo=True
-    )
-    equipe2.gerente = gerente2
-    equipe2.save()
-    print(f"   ✓ Gerente: {gerente2.username} / gerente123")
-    
-    # Corretores Equipe 1
-    corretor1 = User.objects.create_user(
-        username='corretor1',
-        password='corretor123',
-        email='corretor1@clickgr2.com',
-        first_name='João',
-        last_name='Santos',
-        cpf='444.444.444-44',
-        creci='CRECI 12345',
-        telefone='(21) 97777-7777',
-        nivel='corretor',
-        equipe=equipe1,
-        ativo=True
-    )
-    print(f"   ✓ Corretor: {corretor1.username} / corretor123")
-    
-    corretor2 = User.objects.create_user(
-        username='corretor2',
-        password='corretor123',
-        email='corretor2@clickgr2.com',
-        first_name='Maria',
-        last_name='Costa',
-        cpf='555.555.555-55',
-        creci='CRECI 12346',
-        telefone='(21) 97666-6666',
-        nivel='corretor',
-        equipe=equipe1,
-        ativo=True
-    )
-    print(f"   ✓ Corretor: {corretor2.username} / corretor123")
-    
-    # Corretores Equipe 2
-    corretor3 = User.objects.create_user(
-        username='corretor3',
-        password='corretor123',
-        email='corretor3@clickgr2.com',
-        first_name='Pedro',
-        last_name='Almeida',
-        cpf='666.666.666-66',
-        creci='CRECI 12347',
-        telefone='(21) 97555-5555',
-        nivel='corretor',
-        equipe=equipe2,
-        ativo=True
-    )
-    print(f"   ✓ Corretor: {corretor3.username} / corretor123")
-    
-    corretor4 = User.objects.create_user(
-        username='corretor4',
-        password='corretor123',
-        email='corretor4@clickgr2.com',
-        first_name='Ana',
-        last_name='Ferreira',
-        cpf='777.777.777-77',
-        creci='CRECI 12348',
-        telefone='(21) 97444-4444',
-        nivel='corretor',
-        equipe=equipe2,
-        ativo=True
-    )
-    print(f"   ✓ Corretor: {corretor4.username} / corretor123")
-    
-    print(f"✅ Criados {User.objects.count()} usuários\n")
-    return admin, gerente1, gerente2, corretor1, corretor2, corretor3, corretor4
+    print(f"✅ Administrador criado: {admin.username} / senha: admin123")
+    return admin
 
-def criar_construtoras(admin):
-    """Cria construtoras de teste"""
-    print("🏗️ Criando construtoras...")
-    
-    construtora1 = Construtora.objects.create(
-        razao_social="RJZ Cyrela Incorporações Ltda",
-        nome_fantasia="RJZ Cyrela",
-        cnpj="12.345.678/0001-90",
-        rua="Av. das Américas",
-        numero="5000",
-        bairro="Barra da Tijuca",
-        cidade="Rio de Janeiro",
-        estado="RJ",
-        cep="22640-100",
-        telefone="(21) 3333-3333",
-        email="contato@rjzcyrela.com.br",
-        responsavel_legal="Roberto Silva",
-        ativa=True,
-        cadastrado_por=admin
-    )
-    print(f"   ✓ {construtora1.nome_fantasia}")
-    
-    construtora2 = Construtora.objects.create(
-        razao_social="Tenda Construções S.A.",
-        nome_fantasia="Tenda",
-        cnpj="98.765.432/0001-10",
-        rua="Rua da Construção",
-        numero="100",
-        bairro="Centro",
-        cidade="São Gonçalo",
-        estado="RJ",
-        cep="24440-000",
-        telefone="(21) 2222-2222",
-        email="contato@tenda.com.br",
-        responsavel_legal="José Oliveira",
-        ativa=True,
-        cadastrado_por=admin
-    )
-    print(f"   ✓ {construtora2.nome_fantasia}")
-    
-    construtora3 = Construtora.objects.create(
-        razao_social="MRV Engenharia e Participações S.A.",
-        nome_fantasia="MRV",
-        cnpj="11.222.333/0001-44",
-        rua="Av. Brasil",
-        numero="2500",
-        bairro="Penha",
-        cidade="Rio de Janeiro",
-        estado="RJ",
-        cep="21020-000",
-        telefone="(21) 4444-4444",
-        email="contato@mrv.com.br",
-        responsavel_legal="Maria Santos",
-        ativa=True,
-        cadastrado_por=admin
-    )
-    print(f"   ✓ {construtora3.nome_fantasia}")
-    
-    print(f"✅ Criadas {Construtora.objects.count()} construtoras\n")
-    return construtora1, construtora2, construtora3
 
-def criar_empreendimentos(construtoras, admin):
-    """Cria empreendimentos de teste"""
-    print("🏘️ Criando empreendimentos...")
+def criar_equipes_gerentes_corretores():
+    """Cria 4 equipes, cada uma com 1 gerente e 3 corretores"""
+    print("\n📌 Criando Equipes, Gerentes e Corretores...")
     
-    c1, c2, c3 = construtoras
-    hoje = datetime.now().date()
+    equipes_nomes = ['Equipe Alpha', 'Equipe Beta', 'Equipe Gamma', 'Equipe Delta']
     
-    # Empreendimento 1 - RJZ Cyrela
-    emp1 = Empreendimento.objects.create(
-        nome="Residencial Vista Mar",
-        construtora=c1,
-        tipo_imovel="apartamento",
-        rua="Rua das Palmeiras",
-        numero="500",
-        bairro="Barra da Tijuca",
-        cidade="Rio de Janeiro",
-        estado="RJ",
-        cep="22640-200",
-        descricao_completa="Apartamento com 2 quartos, sala, cozinha, banheiro e área de serviço. Condomínio com piscina, churrasqueira e salão de festas.",
-        quartos=2,
-        banheiros=1,
-        vagas_garagem=1,
-        area_util=Decimal("65.00"),
-        total_unidades=50,
-        unidades_disponiveis=50,
-        valor_imovel=Decimal("280000.00"),
-        valor_engenharia_necessaria=Decimal("250000.00"),
-        taxa_corretagem_percentual=Decimal("5.00"),
-        status="lancamento",
-        data_lancamento=hoje,
-        data_entrega_prevista=hoje + timedelta(days=730),
-        ativo=True,
-        cadastrado_por=admin
-    )
-    print(f"   ✓ {emp1.nome}")
+    todos_usuarios = []
     
-    # Empreendimento 2 - Tenda
-    emp2 = Empreendimento.objects.create(
-        nome="Condomínio Vila Verde",
-        construtora=c2,
-        tipo_imovel="casa",
-        rua="Rua João Pessoa",
-        numero="1200",
-        bairro="Centro",
-        cidade="São Gonçalo",
-        estado="RJ",
-        cep="24440-300",
-        descricao_completa="Casa linear com 2 quartos, sala, cozinha, banheiro e quintal. Área de lazer comunitária.",
-        quartos=2,
-        banheiros=1,
-        vagas_garagem=0,
-        area_util=Decimal("55.00"),
-        total_unidades=30,
-        unidades_disponiveis=30,
-        valor_imovel=Decimal("220000.00"),
-        valor_engenharia_necessaria=Decimal("200000.00"),
-        taxa_corretagem_percentual=Decimal("5.00"),
-        status="em_obras",
-        data_lancamento=hoje - timedelta(days=90),
-        data_entrega_prevista=hoje + timedelta(days=540),
-        ativo=True,
-        cadastrado_por=admin
-    )
-    print(f"   ✓ {emp2.nome}")
-    
-    # Empreendimento 3 - MRV
-    emp3 = Empreendimento.objects.create(
-        nome="Residencial Parque das Flores",
-        construtora=c3,
-        tipo_imovel="apartamento",
-        rua="Av. Central",
-        numero="800",
-        bairro="Vila Iara",
-        cidade="São Gonçalo",
-        estado="RJ",
-        cep="24465-100",
-        descricao_completa="Apartamento com 3 quartos sendo 1 suíte, sala, cozinha americana, 2 banheiros e área de serviço. Lazer completo.",
-        quartos=3,
-        banheiros=2,
-        vagas_garagem=1,
-        area_util=Decimal("75.00"),
-        total_unidades=80,
-        unidades_disponiveis=80,
-        valor_imovel=Decimal("320000.00"),
-        valor_engenharia_necessaria=Decimal("290000.00"),
-        taxa_corretagem_percentual=Decimal("5.00"),
-        status="lancamento",
-        data_lancamento=hoje,
-        data_entrega_prevista=hoje + timedelta(days=900),
-        ativo=True,
-        cadastrado_por=admin
-    )
-    print(f"   ✓ {emp3.nome}")
-    
-    # Empreendimento 4 - Tenda (Kitnet)
-    emp4 = Empreendimento.objects.create(
-        nome="Smart Living São Gonçalo",
-        construtora=c2,
-        tipo_imovel="kitnet",
-        rua="Rua Feliciano Sodré",
-        numero="350",
-        bairro="Centro",
-        cidade="São Gonçalo",
-        estado="RJ",
-        cep="24440-400",
-        descricao_completa="Kitnet moderna com área integrada, banheiro completo. Ideal para estudantes e solteiros.",
-        quartos=1,
-        banheiros=1,
-        vagas_garagem=0,
-        area_util=Decimal("32.00"),
-        total_unidades=40,
-        unidades_disponiveis=40,
-        valor_imovel=Decimal("150000.00"),
-        valor_engenharia_necessaria=Decimal("135000.00"),
-        taxa_corretagem_percentual=Decimal("5.00"),
-        status="pronto",
-        data_lancamento=hoje - timedelta(days=180),
-        data_entrega_prevista=hoje + timedelta(days=30),
-        ativo=True,
-        cadastrado_por=admin
-    )
-    print(f"   ✓ {emp4.nome}")
-    
-    print(f"✅ Criados {Empreendimento.objects.count()} empreendimentos\n")
-    return emp1, emp2, emp3, emp4
-
-def criar_unidades(empreendimentos):
-    """Cria unidades dos empreendimentos"""
-    print("🏠 Criando unidades...")
-    
-    total_unidades = 0
-    
-    for emp in empreendimentos:
-        # Criar unidades baseadas no tipo de imóvel
-        if emp.tipo_imovel == 'apartamento':
-            # Criar apartamentos por andar
-            for andar in range(1, 11):  # 10 andares
-                for apto in range(1, 6):  # 5 aptos por andar
-                    UnidadeEmpreendimento.objects.create(
-                        empreendimento=emp,
-                        identificacao=f"Apto {andar}0{apto}",
-                        andar=str(andar),
-                        bloco="A",
-                        status='disponivel'
-                    )
-                    total_unidades += 1
-                    if total_unidades >= emp.total_unidades:
-                        break
-                if total_unidades >= emp.total_unidades:
-                    break
+    for i, nome_equipe in enumerate(equipes_nomes, start=1):
+        # Criar equipe
+        equipe = Equipe.objects.create(
+            nome=nome_equipe,
+            ativa=True
+        )
+        print(f"\n🏢 Equipe criada: {nome_equipe}")
         
-        elif emp.tipo_imovel == 'casa':
-            # Criar casas numeradas
-            for num in range(1, emp.total_unidades + 1):
-                UnidadeEmpreendimento.objects.create(
-                    empreendimento=emp,
-                    identificacao=f"Casa {num:02d}",
-                    status='disponivel'
-                )
-                total_unidades += 1
+        # Criar gerente da equipe
+        gerente = User.objects.create_user(
+            username=f'gerente{i}',
+            password='gerente123',
+            email=f'gerente{i}@contratus.com',
+            first_name=f'Gerente',
+            last_name=f'Equipe {i}',
+            cpf=f'111.111.11{i}-{i}0',
+            creci=f'CRECI-{10000 + i}',
+            telefone=f'(11) 9888{i}-000{i}',
+            nivel='gerente',
+            equipe=equipe
+        )
         
-        elif emp.tipo_imovel == 'kitnet':
-            # Criar kitnets
-            for num in range(1, emp.total_unidades + 1):
-                UnidadeEmpreendimento.objects.create(
-                    empreendimento=emp,
-                    identificacao=f"Kitnet {num:02d}",
-                    andar=str((num-1) // 4 + 1),
-                    status='disponivel'
-                )
-                total_unidades += 1
+        # Definir líder da equipe
+        equipe.lider = gerente
+        equipe.save()
+        
+        print(f"  👔 Gerente: {gerente.username} / senha: gerente123")
+        todos_usuarios.append(gerente)
+        
+        # Criar 3 corretores para essa equipe
+        for j in range(1, 4):
+            corretor_numero = (i - 1) * 3 + j
+            corretor = User.objects.create_user(
+                username=f'corretor{corretor_numero}',
+                password='corretor123',
+                email=f'corretor{corretor_numero}@contratus.com',
+                first_name=f'Corretor',
+                last_name=f'{corretor_numero}',
+                cpf=f'222.222.{corretor_numero:03d}-{corretor_numero:02d}',
+                creci=f'CRECI-{20000 + corretor_numero}',
+                telefone=f'(11) 9777{corretor_numero}-{corretor_numero:04d}',
+                nivel='corretor',
+                equipe=equipe
+            )
+            
+            print(f"    👤 Corretor: {corretor.username} / senha: corretor123")
+            todos_usuarios.append(corretor)
     
-    print(f"✅ Criadas {UnidadeEmpreendimento.objects.count()} unidades\n")
+    print(f"\n✅ Total: 4 gerentes e 12 corretores criados!")
+    return todos_usuarios
 
-def criar_clientes(corretores):
-    """Cria clientes de teste"""
-    print("👨‍👩‍👧‍👦 Criando clientes...")
+
+def criar_construtoras():
+    """Cria construtoras de exemplo"""
+    print("\n📌 Criando Construtoras...")
     
-    hoje = datetime.now().date()
+    construtoras_data = [
+        {
+            'nome': 'Construtora Prime',
+            'cnpj': '11.111.111/0001-11',
+            'telefone': '(11) 3000-1111',
+            'email': 'contato@prime.com.br',
+            'endereco': 'Av. Paulista, 1000 - São Paulo/SP'
+        },
+        {
+            'nome': 'Construtora Excellence',
+            'cnpj': '22.222.222/0001-22',
+            'telefone': '(11) 3000-2222',
+            'email': 'contato@excellence.com.br',
+            'endereco': 'Av. Faria Lima, 2000 - São Paulo/SP'
+        },
+        {
+            'nome': 'Construtora Moderna',
+            'cnpj': '33.333.333/0001-33',
+            'telefone': '(11) 3000-3333',
+            'email': 'contato@moderna.com.br',
+            'endereco': 'R. dos Três Irmãos, 500 - São Paulo/SP'
+        }
+    ]
+    
+    construtoras = []
+    for data in construtoras_data:
+        construtora = Construtora.objects.create(**data)
+        construtoras.append(construtora)
+        print(f"  🏗️  {construtora.nome}")
+    
+    print(f"✅ {len(construtoras)} construtoras criadas!")
+    return construtoras
+
+
+def criar_tipos_unidade():
+    """Cria tipos de unidade"""
+    print("\n📌 Criando Tipos de Unidade...")
+    
+    tipos = [
+        {'nome': 'Apartamento Padrão', 'descricao': 'Apartamento com acabamento padrão'},
+        {'nome': 'Apartamento Premium', 'descricao': 'Apartamento com acabamento de luxo'},
+        {'nome': 'Cobertura', 'descricao': 'Cobertura duplex com área privativa'},
+        {'nome': 'Studio', 'descricao': 'Unidade compacta tipo studio'},
+    ]
+    
+    tipos_criados = []
+    for tipo_data in tipos:
+        tipo = TipoUnidade.objects.create(**tipo_data)
+        tipos_criados.append(tipo)
+        print(f"  🏠 {tipo.nome}")
+    
+    print(f"✅ {len(tipos_criados)} tipos de unidade criados!")
+    return tipos_criados
+
+
+def criar_empreendimentos(construtoras, tipos_unidade):
+    """Cria empreendimentos com unidades"""
+    print("\n📌 Criando Empreendimentos...")
+    
+    empreendimentos_data = [
+        {
+            'nome': 'Residencial Parque das Flores',
+            'endereco': 'Rua das Flores, 100',
+            'cidade': 'São Paulo',
+            'estado': 'SP',
+            'data_lancamento': date(2024, 1, 15),
+            'data_entrega_prevista': date(2026, 6, 30),
+            'descricao': 'Condomínio completo com área de lazer',
+            'percentual_corretor': Decimal('2.50'),
+            'percentual_gerente': Decimal('1.00')
+        },
+        {
+            'nome': 'Edifício Vista Verde',
+            'endereco': 'Av. Verde, 500',
+            'cidade': 'São Paulo',
+            'estado': 'SP',
+            'data_lancamento': date(2024, 3, 20),
+            'data_entrega_prevista': date(2026, 12, 31),
+            'descricao': 'Vista privilegiada para área verde',
+            'percentual_corretor': Decimal('3.00'),
+            'percentual_gerente': Decimal('1.50')
+        },
+        {
+            'nome': 'Condomínio Solar do Itaim',
+            'endereco': 'Rua Itaim, 250',
+            'cidade': 'São Paulo',
+            'estado': 'SP',
+            'data_lancamento': date(2024, 5, 10),
+            'data_entrega_prevista': date(2027, 3, 15),
+            'descricao': 'Localização premium no Itaim Bibi',
+            'percentual_corretor': Decimal('2.00'),
+            'percentual_gerente': Decimal('0.80')
+        }
+    ]
+    
+    empreendimentos = []
+    
+    for i, emp_data in enumerate(empreendimentos_data):
+        # Atribuir construtora rotativa
+        construtora = construtoras[i % len(construtoras)]
+        
+        empreendimento = Empreendimento.objects.create(
+            construtora=construtora,
+            **emp_data
+        )
+        empreendimentos.append(empreendimento)
+        print(f"\n  🏢 {empreendimento.nome}")
+        
+        # Criar unidades para este empreendimento
+        criar_unidades(empreendimento, tipos_unidade)
+    
+    print(f"\n✅ {len(empreendimentos)} empreendimentos criados!")
+    return empreendimentos
+
+
+def criar_unidades(empreendimento, tipos_unidade):
+    """Cria unidades para um empreendimento"""
+    print(f"    📦 Criando unidades para {empreendimento.nome}...")
+    
+    # Criar 20 unidades variadas
+    unidades_criadas = 0
+    
+    for andar in range(1, 6):  # 5 andares
+        for numero in range(1, 5):  # 4 unidades por andar
+            tipo = random.choice(tipos_unidade)
+            
+            # Variar características baseado no tipo
+            if tipo.nome == 'Studio':
+                quartos = 1
+                suites = 0
+                banheiros = 1
+                vagas = 0
+                area = Decimal(random.randint(30, 45))
+                valor_base = Decimal('180000.00')
+            elif tipo.nome == 'Cobertura':
+                quartos = 4
+                suites = 2
+                banheiros = 3
+                vagas = 3
+                area = Decimal(random.randint(150, 200))
+                valor_base = Decimal('850000.00')
+            elif tipo.nome == 'Apartamento Premium':
+                quartos = 3
+                suites = 1
+                banheiros = 2
+                vagas = 2
+                area = Decimal(random.randint(80, 120))
+                valor_base = Decimal('550000.00')
+            else:  # Padrão
+                quartos = 2
+                suites = 1
+                banheiros = 2
+                vagas = 1
+                area = Decimal(random.randint(60, 80))
+                valor_base = Decimal('350000.00')
+            
+            # Adicionar variação de 10% no valor
+            variacao = Decimal(random.uniform(0.9, 1.1))
+            valor_imovel = (valor_base * variacao).quantize(Decimal('0.01'))
+            valor_engenharia = (valor_imovel * Decimal('0.85')).quantize(Decimal('0.01'))
+            
+            unidade = UnidadeEmpreendimento.objects.create(
+                empreendimento=empreendimento,
+                tipo=tipo,
+                numero=f'{andar}{numero:02d}',
+                bloco='A',
+                andar=str(andar),
+                area_privativa=area,
+                quartos=quartos,
+                suites=suites,
+                banheiros=banheiros,
+                vagas_garagem=vagas,
+                valor_imovel=valor_imovel,
+                valor_engenharia=valor_engenharia,
+                status='disponivel'
+            )
+            unidades_criadas += 1
+    
+    print(f"      ✅ {unidades_criadas} unidades criadas")
+
+
+def criar_clientes():
+    """Cria clientes de exemplo"""
+    print("\n📌 Criando Clientes de Exemplo...")
     
     clientes_data = [
         {
-            'nome': 'Roberto da Silva',
-            'cpf': '100.100.100-10',
-            'rg': '10.000.000-1',
-            'telefone': '(21) 98000-0001',
-            'email': 'roberto.silva@email.com',
-            'origem': 'impulsionamento',
-            'corretor': corretores[0]
+            'nome': 'João Silva Santos',
+            'cpf': '123.456.789-01',
+            'rg': '12.345.678-9',
+            'data_nascimento': date(1985, 5, 15),
+            'estado_civil': 'casado',
+            'profissao': 'Engenheiro',
+            'renda_mensal': Decimal('12000.00'),
+            'telefone': '(11) 98765-4321',
+            'email': 'joao.silva@email.com',
+            'endereco': 'Rua das Acácias, 123',
+            'cidade': 'São Paulo',
+            'estado': 'SP',
+            'cep': '01234-567'
         },
         {
-            'nome': 'Fernanda Oliveira Santos',
-            'cpf': '200.200.200-20',
-            'rg': '20.000.000-2',
-            'telefone': '(21) 98000-0002',
-            'email': 'fernanda.santos@email.com',
-            'origem': 'indicacao',
-            'corretor': corretores[0]
+            'nome': 'Maria Oliveira Costa',
+            'cpf': '234.567.890-12',
+            'rg': '23.456.789-0',
+            'data_nascimento': date(1990, 8, 20),
+            'estado_civil': 'solteiro',
+            'profissao': 'Médica',
+            'renda_mensal': Decimal('15000.00'),
+            'telefone': '(11) 97654-3210',
+            'email': 'maria.oliveira@email.com',
+            'endereco': 'Av. Paulista, 456',
+            'cidade': 'São Paulo',
+            'estado': 'SP',
+            'cep': '01310-100'
         },
         {
             'nome': 'Carlos Eduardo Pereira',
-            'cpf': '300.300.300-30',
-            'rg': '30.000.000-3',
-            'telefone': '(21) 98000-0003',
+            'cpf': '345.678.901-23',
+            'rg': '34.567.890-1',
+            'data_nascimento': date(1988, 3, 10),
+            'estado_civil': 'divorciado',
+            'profissao': 'Advogado',
+            'renda_mensal': Decimal('18000.00'),
+            'telefone': '(11) 96543-2109',
             'email': 'carlos.pereira@email.com',
-            'origem': 'walkin',
-            'corretor': corretores[1]
+            'endereco': 'Rua Augusta, 789',
+            'cidade': 'São Paulo',
+            'estado': 'SP',
+            'cep': '01305-100'
         },
         {
-            'nome': 'Juliana Costa Almeida',
-            'cpf': '400.400.400-40',
-            'rg': '40.000.000-4',
-            'telefone': '(21) 98000-0004',
-            'email': 'juliana.almeida@email.com',
-            'origem': 'site',
-            'corretor': corretores[1]
+            'nome': 'Ana Paula Rodrigues',
+            'cpf': '456.789.012-34',
+            'rg': '45.678.901-2',
+            'data_nascimento': date(1992, 11, 25),
+            'estado_civil': 'casado',
+            'profissao': 'Arquiteta',
+            'renda_mensal': Decimal('10000.00'),
+            'telefone': '(11) 95432-1098',
+            'email': 'ana.rodrigues@email.com',
+            'endereco': 'Rua Haddock Lobo, 321',
+            'cidade': 'São Paulo',
+            'estado': 'SP',
+            'cep': '01414-001'
         },
         {
-            'nome': 'Marcos Vinícius Souza',
-            'cpf': '500.500.500-50',
-            'rg': '50.000.000-5',
-            'telefone': '(21) 98000-0005',
-            'email': 'marcos.souza@email.com',
-            'origem': 'redes_sociais',
-            'corretor': corretores[2]
-        },
-        {
-            'nome': 'Patricia Lima Rodrigues',
-            'cpf': '600.600.600-60',
-            'rg': '60.000.000-6',
-            'telefone': '(21) 98000-0006',
-            'email': 'patricia.rodrigues@email.com',
-            'origem': 'telefone',
-            'corretor': corretores[2]
-        },
-        {
-            'nome': 'André Luiz Martins',
-            'cpf': '700.700.700-70',
-            'rg': '70.000.000-7',
-            'telefone': '(21) 98000-0007',
-            'email': 'andre.martins@email.com',
-            'origem': 'impulsionamento',
-            'corretor': corretores[3]
-        },
-        {
-            'nome': 'Camila Ferreira Gomes',
-            'cpf': '800.800.800-80',
-            'rg': '80.000.000-8',
-            'telefone': '(21) 98000-0008',
-            'email': 'camila.gomes@email.com',
-            'origem': 'indicacao',
-            'corretor': corretores[3]
-        },
-        {
-            'nome': 'Ricardo Alves da Costa',
-            'cpf': '900.900.900-90',
-            'rg': '90.000.000-9',
-            'telefone': '(21) 98000-0009',
-            'email': 'ricardo.costa@email.com',
-            'origem': 'site',
-            'corretor': corretores[0]
-        },
-        {
-            'nome': 'Vanessa Cristina Santos',
-            'cpf': '101.101.101-01',
-            'rg': '11.000.000-1',
-            'telefone': '(21) 98000-0010',
-            'email': 'vanessa.santos@email.com',
-            'origem': 'redes_sociais',
-            'corretor': corretores[1]
-        },
+            'nome': 'Pedro Henrique Alves',
+            'cpf': '567.890.123-45',
+            'rg': '56.789.012-3',
+            'data_nascimento': date(1987, 7, 8),
+            'estado_civil': 'solteiro',
+            'profissao': 'Empresário',
+            'renda_mensal': Decimal('25000.00'),
+            'telefone': '(11) 94321-0987',
+            'email': 'pedro.alves@email.com',
+            'endereco': 'Av. Faria Lima, 654',
+            'cidade': 'São Paulo',
+            'estado': 'SP',
+            'cep': '04538-132'
+        }
     ]
     
+    # Pegar um corretor aleatório para atribuir aos clientes
+    corretores = User.objects.filter(nivel='corretor')
+    
     clientes = []
-    for data in clientes_data:
+    for cliente_data in clientes_data:
+        corretor = random.choice(corretores)
         cliente = Cliente.objects.create(
-            nome_completo=data['nome'],
-            cpf=data['cpf'],
-            rg=data['rg'],
-            data_nascimento=hoje - timedelta(days=365*30),  # 30 anos atrás
-            estado_civil='Solteiro(a)',
-            telefone=data['telefone'],
-            email=data['email'],
-            rua='Rua Exemplo',
-            numero='100',
-            bairro='Centro',
-            cidade='São Gonçalo',
-            estado='RJ',
-            cep='24440-000',
-            origem=data['origem'],
-            cadastrado_por=data['corretor']
+            corretor_cadastro=corretor,
+            **cliente_data
         )
         clientes.append(cliente)
-        print(f"   ✓ {cliente.nome_completo}")
+        print(f"  👤 {cliente.nome}")
     
-    print(f"✅ Criados {Cliente.objects.count()} clientes\n")
+    print(f"✅ {len(clientes)} clientes criados!")
     return clientes
 
-def criar_configuracao():
-    """Cria/atualiza configuração do sistema"""
-    print("⚙️ Criando configuração do sistema...")
-    config = Configuracao.load()
-    print(f"✅ Configuração criada/atualizada\n")
-    return config
 
 def main():
     """Função principal"""
-    print("=" * 60)
-    print("🚀 POPULANDO BANCO DE DADOS - CONTRATUS")
-    print("=" * 60)
-    print()
+    print("\n" + "="*60)
+    print("🚀 SCRIPT DE POPULAÇÃO DO BANCO DE DADOS - CONTRATUS")
+    print("="*60)
     
-    # Perguntar se deseja limpar dados anteriores
-    resposta = input("⚠️ Deseja limpar dados anteriores? (s/n): ")
-    if resposta.lower() == 's':
+    resposta = input("\n⚠️  Este script irá LIMPAR todos os dados existentes. Continuar? (s/n): ")
+    if resposta.lower() != 's':
+        print("❌ Operação cancelada.")
+        return
+    
+    try:
+        # Limpar dados existentes
         limpar_dados()
-    
-    # Criar dados
-    equipe1, equipe2 = criar_equipes()
-    admin, gerente1, gerente2, corretor1, corretor2, corretor3, corretor4 = criar_usuarios(equipe1, equipe2)
-    construtoras = criar_construtoras(admin)
-    empreendimentos = criar_empreendimentos(construtoras, admin)
-    criar_unidades(empreendimentos)
-    clientes = criar_clientes([corretor1, corretor2, corretor3, corretor4])
-    criar_configuracao()
-    
-    print("=" * 60)
-    print("✅ BANCO DE DADOS POPULADO COM SUCESSO!")
-    print("=" * 60)
-    print()
-    print("📊 RESUMO:")
-    print(f"   • {User.objects.count()} usuários")
-    print(f"   • {Equipe.objects.count()} equipes")
-    print(f"   • {Construtora.objects.count()} construtoras")
-    print(f"   • {Empreendimento.objects.count()} empreendimentos")
-    print(f"   • {UnidadeEmpreendimento.objects.count()} unidades")
-    print(f"   • {Cliente.objects.count()} clientes")
-    print()
-    print("👤 CREDENCIAIS DE ACESSO:")
-    print("   Administrador:")
-    print("      Usuário: admin")
-    print("      Senha: admin123")
-    print()
-    print("   Gerentes:")
-    print("      Usuário: gerente1 / Senha: gerente123")
-    print("      Usuário: gerente2 / Senha: gerente123")
-    print()
-    print("   Corretores:")
-    print("      Usuário: corretor1 / Senha: corretor123")
-    print("      Usuário: corretor2 / Senha: corretor123")
-    print("      Usuário: corretor3 / Senha: corretor123")
-    print("      Usuário: corretor4 / Senha: corretor123")
-    print()
-    print("=" * 60)
+        
+        # Criar estrutura
+        admin = criar_administrador()
+        usuarios = criar_equipes_gerentes_corretores()
+        construtoras = criar_construtoras()
+        tipos_unidade = criar_tipos_unidade()
+        empreendimentos = criar_empreendimentos(construtoras, tipos_unidade)
+        clientes = criar_clientes()
+        
+        print("\n" + "="*60)
+        print("✅ BANCO DE DADOS POPULADO COM SUCESSO!")
+        print("="*60)
+        print("\n📊 RESUMO:")
+        print(f"  • 1 Administrador")
+        print(f"  • 4 Gerentes (1 por equipe)")
+        print(f"  • 12 Corretores (3 por equipe)")
+        print(f"  • {len(construtoras)} Construtoras")
+        print(f"  • {len(tipos_unidade)} Tipos de Unidade")
+        print(f"  • {len(empreendimentos)} Empreendimentos")
+        print(f"  • {UnidadeEmpreendimento.objects.count()} Unidades")
+        print(f"  • {len(clientes)} Clientes")
+        
+        print("\n🔐 CREDENCIAIS DE ACESSO:")
+        print("  Administrador:")
+        print("    usuário: admin | senha: admin123")
+        print("\n  Gerentes:")
+        print("    usuário: gerente1 a gerente4 | senha: gerente123")
+        print("\n  Corretores:")
+        print("    usuário: corretor1 a corretor12 | senha: corretor123")
+        
+        print("\n" + "="*60)
+        
+    except Exception as e:
+        print(f"\n❌ ERRO: {e}")
+        import traceback
+        traceback.print_exc()
+
 
 if __name__ == '__main__':
     main()

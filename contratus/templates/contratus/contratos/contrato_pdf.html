@@ -159,30 +159,34 @@
         <p>
             Que, assim como o possui, pelo presente e na melhor forma de direito, 
             o VENDEDOR vende o supra referido imóvel, ao COMPRADOR, pelo preço certo e ajustado de 
-            <strong>R$ {{ contrato.valor_imovel|floatformat:2 }} ({{ valor_extenso }})</strong> 
+            <strong>R$ {{ contrato.proposta.valor_construtora|floatformat:2 }} ({{ valor_extenso }})</strong> 
             referente ao valor do imóvel que serão pagos da seguinte forma:
         </p>
         
         <ul>
             <li>
-                <strong>R$ {{ contrato.valor_financiamento|floatformat:2 }}</strong> 
+                <strong>R$ {{ contrato.proposta.valor_financiamento|floatformat:2 }}</strong> 
                 que serão financiados pela Caixa Econômica Federal;
             </li>
+
             <li>
-                <strong>R$ {{ contrato.valor_subsidio|floatformat:2 }}</strong> 
+                <strong>R$ {{ contrato.proposta.valor_subsidio|floatformat:2 }}</strong> 
                 referente ao subsídio do Governo Federal;
             </li>
-            {% if contrato.valor_entrada > 0 %}
+
+            {% if contrato.proposta.valor_entrada > 0 %}
             <li>
-                <strong>R$ {{ contrato.valor_entrada|floatformat:2 }}</strong> 
+                <strong>R$ {{ contrato.proposta.valor_entrada|floatformat:2 }}</strong> 
                 referente à entrada do imóvel;
             </li>
             {% endif %}
+
             <li>
-                <strong>R$ {{ contrato.valor_parcelamento|floatformat:2 }}</strong> 
-                que serão parcelados com a construtora em {{ contrato.numero_parcelas }} vezes de 
-                <strong>R$ {{ contrato.valor_parcela|floatformat:2 }}</strong>
+                <strong>R$ {{ contrato.proposta.valor_com_juros|floatformat:2 }}</strong>
+                parcelados em {{ contrato.proposta.quantidade_parcelas }} vezes de
+                <strong>R$ {{ contrato.proposta.valor_parcela_cliente|floatformat:2 }}</strong>
             </li>
+
         </ul>
     </div>
     
@@ -219,7 +223,7 @@
             IMÓVEL mencionado no item 04, e de outro lado os promissários COMPRADORES nomeados e 
             qualificados no item 02, que o promitente VENDEDOR promete vender aos promissários 
             COMPRADORES, e estes convencionam adquirir-lhe, o imóvel descrito no item 04, pelo 
-            preço certo e ajustado de <strong>R$ {{ contrato.valor_imovel|floatformat:2 }} 
+            preço certo e ajustado de <strong>R$ {{ contrato.proposta.valor_construtora|floatformat:2 }} 
             ({{ valor_extenso }})</strong>, em termos e condições estipuladas no item 05, 
             que mutuamente outorgam e aceitam a saber.
         </p>
@@ -492,7 +496,7 @@
             EU, <strong>{{ contrato.cliente.nome_completo|upper }}</strong>, portador(a) do CPF: <strong>{{ contrato.cliente.cpf }}</strong>, 
             declaro na qualidade de promitente COMPRADOR, termos realizado visita no imóvel situado à 
             <strong>{{ contrato.empreendimento.get_endereco_completo }}</strong>, {{ contrato.unidade.identificacao }}. 
-            E ter tido todos os esclarecimentos necessários referentes ao financiamento, tempo e valor das parcelas, 
+            E ter tido todos os esclarecimentos necessários referentes ao financiamento, tempo e valor das parcelas de R$ {{ contrato.proposta.valor_parcela_cliente|floatformat:2 }}, 
             projeto da construção, descriminação das partes comuns, e demais informações sobre a compra do imóvel em questão.
         </p>
         

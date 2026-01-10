@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-lg-8 mx-auto">
+    <div class="col-lg-10 mx-auto">
         <div class="card">
             <div class="card-header">
                 <i class="bi bi-lightning"></i> {{ title }}
@@ -17,46 +17,54 @@
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i>
                         <strong>Empreendimento:</strong> {{ empreendimento.nome }}<br>
-                        <small>Esta ferramenta permite criar várias unidades de uma só vez.</small>
+                        <small>💡 <strong>Dica:</strong> Escolha um Tipo de Unidade para preencher automaticamente os campos!</small>
                     </div>
                     
-                    <h5 class="mb-3">Configurações</h5>
+                    <!-- ============================= -->
+                    <!-- HIDDEN: EMPREENDIMENTO -->
+                    <!-- ============================= -->
+                    {{ form.empreendimento }}
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-tag"></i> Tipo de Unidade</h5>
                     
                     <!-- Tipo de Unidade -->
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Tipo de Unidade</label>
-                            {{ form.tipo_unidade }}
-                            <small class="text-muted d-block">
-                                Opcional - Todas as unidades criadas terão este tipo
+                            <label class="form-label">
+                                Tipo de Unidade (Opcional - Auto-preenche os campos abaixo)
+                            </label>
+                            {{ form.tipo }}
+                            {% if form.tipo.errors %}
+                            <div class="text-danger">{{ form.tipo.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted d-block mt-1">
+                                ✨ Ao selecionar um tipo, os campos de características e valores serão preenchidos automaticamente!
+                                <br>Você ainda pode editar os valores manualmente se necessário.
                             </small>
                         </div>
                     </div>
                     
                     <hr>
-                    <h5 class="mb-3">Numeração</h5>
+                    <h5 class="mb-3"><i class="bi bi-123"></i> Numeração</h5>
                     
-                    <!-- Prefixo -->
+                    <!-- Prefixo e Números -->
                     <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">Prefixo</label>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Prefixo (opcional)</label>
                             {{ form.prefixo }}
                             <small class="text-muted d-block">
-                                Ex: "Casa", "Apto", "Bloco A - Apto"
+                                Ex: "Casa", "Apto", "Bloco A"
                             </small>
                         </div>
-                    </div>
-                    
-                    <!-- Números -->
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Número Inicial *</label>
                             {{ form.numero_inicial }}
                             {% if form.numero_inicial.errors %}
                             <div class="text-danger">{{ form.numero_inicial.errors }}</div>
                             {% endif %}
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Número Final *</label>
                             {{ form.numero_final }}
                             {% if form.numero_final.errors %}
@@ -75,26 +83,106 @@
                         </div>
                     </div>
                     
-                    <hr>
-                    <h5 class="mb-3">Informações Adicionais</h5>
-                    
                     <!-- Andar e Bloco -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Andar</label>
+                            <label class="form-label">Andar (opcional)</label>
                             {{ form.andar }}
                             <small class="text-muted d-block">
-                                Opcional - Será aplicado a todas as unidades
+                                Será aplicado a todas as unidades
                             </small>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Bloco</label>
+                            <label class="form-label">Bloco (opcional)</label>
                             {{ form.bloco }}
                             <small class="text-muted d-block">
-                                Opcional - Será aplicado a todas as unidades
+                                Será aplicado a todas as unidades
                             </small>
                         </div>
                     </div>
+                    
+                    <hr>
+                    <h5 class="mb-3">
+                        <i class="bi bi-house-door"></i> Características das Unidades
+                        <span class="badge bg-success ms-2" id="badge-auto-preenchido" style="display: none;">
+                            Auto-preenchido
+                        </span>
+                    </h5>
+                    
+                    <!-- Área e Cômodos -->
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Área Privativa (m²) *</label>
+                            {{ form.area_privativa }}
+                            {% if form.area_privativa.errors %}
+                            <div class="text-danger">{{ form.area_privativa.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Quartos *</label>
+                            {{ form.quartos }}
+                            {% if form.quartos.errors %}
+                            <div class="text-danger">{{ form.quartos.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Suítes *</label>
+                            {{ form.suites }}
+                            {% if form.suites.errors %}
+                            <div class="text-danger">{{ form.suites.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Banheiros *</label>
+                            {{ form.banheiros }}
+                            {% if form.banheiros.errors %}
+                            <div class="text-danger">{{ form.banheiros.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Vagas de Garagem *</label>
+                            {{ form.vagas_garagem }}
+                            {% if form.vagas_garagem.errors %}
+                            <div class="text-danger">{{ form.vagas_garagem.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3">
+                        <i class="bi bi-currency-dollar"></i> Valores Financeiros
+                        <span class="badge bg-success ms-2" id="badge-auto-preenchido-valores" style="display: none;">
+                            Auto-preenchido
+                        </span>
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Valor do Imóvel (R$) *</label>
+                            {{ form.valor_imovel }}
+                            {% if form.valor_imovel.errors %}
+                            <div class="text-danger">{{ form.valor_imovel.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted d-block">
+                                Valor base de venda de cada unidade
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Valor de Engenharia (R$) *</label>
+                            {{ form.valor_engenharia }}
+                            {% if form.valor_engenharia.errors %}
+                            <div class="text-danger">{{ form.valor_engenharia.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted d-block">
+                                Valor mínimo para aprovação de engenharia
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <hr>
                     
                     {% if form.non_field_errors %}
                     <div class="alert alert-danger">
@@ -106,8 +194,8 @@
                         <a href="{% url 'empreendimento_detail' empreendimento.pk %}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Cancelar
                         </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-lightning"></i> Criar Unidades
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-lightning"></i> Criar Unidades em Lote
                         </button>
                     </div>
                 </form>
@@ -116,11 +204,12 @@
         
         <div class="card mt-3">
             <div class="card-body">
-                <h6><i class="bi bi-lightbulb"></i> Exemplos</h6>
+                <h6><i class="bi bi-lightbulb"></i> Como Funciona</h6>
                 <ul class="mb-0 small">
-                    <li><strong>Prefixo:</strong> "Casa" | <strong>De:</strong> 1 | <strong>Até:</strong> 10 → Casa 01, Casa 02, ..., Casa 10</li>
-                    <li><strong>Prefixo:</strong> "Apto" | <strong>De:</strong> 101 | <strong>Até:</strong> 110 → Apto 101, Apto 102, ..., Apto 110</li>
-                    <li><strong>Prefixo:</strong> vazio | <strong>De:</strong> 1 | <strong>Até:</strong> 5 → 01, 02, 03, 04, 05</li>
+                    <li>✨ <strong>Modo Automático:</strong> Escolha um Tipo de Unidade e os campos serão preenchidos automaticamente</li>
+                    <li>✏️ <strong>Modo Manual:</strong> Deixe o tipo em branco e preencha todos os campos manualmente</li>
+                    <li>🔧 <strong>Personalização:</strong> Mesmo após escolher um tipo, você pode ajustar qualquer campo</li>
+                    <li>📊 <strong>Exemplo:</strong> Tipo "Apartamento 2 Quartos" → Cria 10 unidades idênticas (101 a 110)</li>
                 </ul>
             </div>
         </div>
@@ -128,7 +217,65 @@
 </div>
 
 <script>
-// Preview das unidades que serão criadas
+// =====================================================
+// ✅ AUTO-PREENCHER CAMPOS AO SELECIONAR TIPO
+// =====================================================
+const tipoSelect = document.getElementById('id_tipo');
+const badgeCaracteristicas = document.getElementById('badge-auto-preenchido');
+const badgeValores = document.getElementById('badge-auto-preenchido-valores');
+
+tipoSelect.addEventListener('change', function() {
+    const tipoId = this.value;
+    
+    if (!tipoId) {
+        // Limpar badges se desselecionar
+        badgeCaracteristicas.style.display = 'none';
+        badgeValores.style.display = 'none';
+        return;
+    }
+    
+    // Buscar dados do tipo via API
+    fetch(`/api/tipos-unidade/${tipoId}/`)
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                const data = result.data;
+                
+                // ✅ Preencher campos automaticamente
+                document.getElementById('id_area_privativa').value = data.area_util;
+                document.getElementById('id_quartos').value = data.quartos;
+                document.getElementById('id_banheiros').value = data.banheiros;
+                document.getElementById('id_vagas_garagem').value = data.vagas_garagem;
+                document.getElementById('id_valor_imovel').value = data.valor_imovel;
+                document.getElementById('id_valor_engenharia').value = data.valor_engenharia_necessaria;
+                
+                // ✅ Preencher suítes (se disponível no TipoUnidade)
+                // Por enquanto deixa 0 (você pode adicionar campo suites no TipoUnidade)
+                document.getElementById('id_suites').value = 0;
+                
+                // ✅ Mostrar badges de confirmação
+                badgeCaracteristicas.style.display = 'inline-block';
+                badgeValores.style.display = 'inline-block';
+                
+                // ✅ Feedback visual (animação)
+                [badgeCaracteristicas, badgeValores].forEach(badge => {
+                    badge.classList.add('animate__animated', 'animate__pulse');
+                    setTimeout(() => {
+                        badge.classList.remove('animate__animated', 'animate__pulse');
+                    }, 1000);
+                });
+                
+                console.log('✅ Campos preenchidos automaticamente do tipo:', data.nome);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar tipo de unidade:', error);
+        });
+});
+
+// =====================================================
+// PREVIEW DAS UNIDADES
+// =====================================================
 function atualizarPreview() {
     const prefixo = document.querySelector('input[name="prefixo"]').value;
     const inicial = parseInt(document.querySelector('input[name="numero_inicial"]').value) || 0;
@@ -169,35 +316,18 @@ function atualizarPreview() {
     }
 }
 
-// Eventos
+// Eventos de preview
 document.querySelector('input[name="prefixo"]').addEventListener('input', atualizarPreview);
 document.querySelector('input[name="numero_inicial"]').addEventListener('input', atualizarPreview);
 document.querySelector('input[name="numero_final"]').addEventListener('input', atualizarPreview);
 
 // Preview inicial
 atualizarPreview();
-
-// Carregar tipos de unidade quando empreendimento mudar
-const empSelect = document.getElementById('id_empreendimento');
-const tipoSelect = document.getElementById('id_tipo_unidade');
-
-if (empSelect) {
-    empSelect.addEventListener('change', function() {
-        const empId = this.value;
-        if (empId) {
-            fetch(`/api/empreendimentos/${empId}/tipos/`)
-                .then(response => response.json())
-                .then(data => {
-                    tipoSelect.innerHTML = '<option value="">---------</option>';
-                    data.forEach(tipo => {
-                        const option = document.createElement('option');
-                        option.value = tipo.id;
-                        option.textContent = tipo.nome;
-                        tipoSelect.appendChild(option);
-                    });
-                });
-        }
-    });
-}
 </script>
+
+{% if not request.user.is_authenticated or 'animate.css' not in request.META.HTTP_USER_AGENT %}
+<!-- Adicionar Animate.css para animações suaves -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+{% endif %}
+
 {% endblock %}

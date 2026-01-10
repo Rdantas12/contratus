@@ -60,15 +60,29 @@
                     <i class="bi bi-eye"></i>
                 </a>
 
-                <!-- Gerar PDF da proposta -->
-                <a href="{% url 'proposta_gerar_pdf' proposta.pk %}" 
-                   class="btn btn-sm btn-outline-danger"
-                   target="_blank"
-                   title="Gerar PDF">
-                    <i class="bi bi-file-pdf"></i>
-                </a>
+                <div class="btn-group" role="group">
 
-                <!-- Aprovar proposta -->
+    <!-- PDF -->
+    <a href="{% url 'proposta_gerar_pdf' proposta.pk %}" 
+       class="btn btn-sm btn-outline-danger"
+       target="_blank"
+       title="Abrir / Baixar PDF">
+        <i class="bi bi-file-pdf"></i>
+    </a>
+
+    <!-- WhatsApp -->
+    <a
+      href="https://wa.me/?text=Olá, segue a proposta do cliente {{ proposta.cliente.nome_completo }}:%0A{{ request.build_absolute_uri|slice:':-1' }}{% url 'proposta_gerar_pdf' proposta.pk %}"
+      target="_blank"
+      class="btn btn-sm btn-outline-success"
+      title="Enviar pelo WhatsApp"
+    >
+      <i class="bi bi-whatsapp"></i>
+    </a>
+
+</div>
+               
+                                    <!-- Aprovar proposta -->
                 {% if proposta.status != 'aprovada' %}
                 <form method="post" action="{% url 'proposta_aprovar' proposta.pk %}" style="display:inline;">
                     {% csrf_token %}
